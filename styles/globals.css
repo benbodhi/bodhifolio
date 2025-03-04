@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --content: 240 10% 20%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    
+    --radius: 0.5rem;
+    --radius-sm: 0.3rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.7rem;
+  }
+
+  .dark {
+    --background: 180 5% 8%;
+    --foreground: 0 0% 98%;
+    --content: 0deg 0% 79%;
+    
+    --card: 180 4% 10%;
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 180 4% 10%;
+    --popover-foreground: 0 0% 98%;
+    
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 180 3% 13%;
+    --input: 180 3% 13%;
+    --ring: 240 4.9% 83.9%;
+  }
+
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+  }
+
+  /* Global styles for interactive elements */
+  a, button, [role="button"], 
+  input[type="button"], input[type="submit"], input[type="reset"],
+  .cursor-pointer {
+    cursor: pointer !important;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  a *, button *, [role="button"] *, 
+  input[type="button"] *, input[type="submit"] *, input[type="reset"] *,
+  .cursor-pointer * {
+    cursor: pointer !important;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .touch-action-manipulation {
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  .gradient-link {
+    @apply relative 
+           bg-[linear-gradient(150deg,#ccffef,#e6d9ff,#ffd9ff)]
+           bg-clip-text text-transparent
+           transition-all duration-300
+           cursor-pointer;
+  }
+
+  .gradient-link:hover {
+    @apply bg-[linear-gradient(150deg,#00ffcc,#9933ff,#ff00ff,#00ffcc)]
+           bg-[length:300%_auto]
+           animate-[gradientOnce_1s_ease-in-out_forwards]
+           bg-clip-text text-transparent;
+  }
+
+  .content-text {
+    @apply text-[hsl(var(--content))] text-base;
+  }
+  
+  .title-text {
+    @apply text-[hsl(var(--foreground))] font-bold;
+  }
+
+  .project-button {
+    @apply inline-flex items-center px-6 py-3 text-base font-medium rounded-2xl
+           bg-[#1a1a1a] transition-all duration-300
+           relative overflow-hidden
+           cursor-pointer;
+  }
+
+  .project-button::before {
+    @apply content-[''] absolute inset-0 opacity-0
+           bg-[linear-gradient(90deg,#252525,#00ffcc,#9933ff,#ff00ff,#252525)]
+           bg-[length:200%_100%]
+           transition-opacity duration-300;
+  }
+
+  .project-button:hover {
+    @apply bg-[#252525];
+  }
+
+  .project-button:hover::before {
+    @apply opacity-100
+           animate-[buttonShine_1s_ease-in-out_forwards];
+  }
+
+  .project-card-button {
+    @apply inline-flex items-center px-6 py-3 text-base font-medium rounded-2xl
+           transition-all duration-300
+           active:scale-95
+           cursor-pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    /* Light mode styles - cleaner look with border only */
+    background-color: transparent !important;
+    border: 2px solid hsl(240, 5.9%, 85%);
+    color: hsl(var(--foreground));
+    
+    /* Dark mode styles */
+    .dark & {
+      background-color: hsl(0deg, 0%, 14%) !important;
+      border: 2px solid hsl(0deg, 0%, 14%);
+      color: hsl(var(--content));
+    }
+  }
+
+  .project-card-button:active {
+    transform: scale(0.95);
+  }
+
+  .project-card-button:hover {
+    border: 2px solid transparent;
+    
+    /* Light mode hover - dark background */
+    background: linear-gradient(hsl(240 10% 20%), hsl(240 10% 20%)) padding-box,
+                linear-gradient(to right, #00ffcc, #9933ff, #ff00ff) border-box !important;
+    color: white;
+    
+    /* Dark mode hover */
+    .dark & {
+      background: linear-gradient(hsl(0deg 0% 12%), hsl(0deg 0% 12%)) padding-box,
+                  linear-gradient(to right, #00ffcc, #9933ff, #ff00ff) border-box !important;
+    }
+  }
+
+  /* Color transitioning link */
+  .color-link {
+    @apply relative text-[#00ffcc] underline underline-offset-2 decoration-1
+           transition-colors duration-1000
+           cursor-pointer;
+    animation: colorCycle 15s infinite linear;
+  }
+
+  @keyframes colorCycle {
+    0%, 100% { color: #00ffcc; } /* Teal */
+    16.6% { color: #9933ff; } /* Purple */
+    33.3% { color: #ff00ff; } /* Pink */
+    50% { color: #ff6600; } /* Orange */
+    66.6% { color: #ffcc00; } /* Yellow */
+    83.3% { color: #ff3333; } /* Red */
+  }
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes gradientOnce {
+  0% { background-position: 0% center; }
+  100% { background-position: 100% center; }
+}
+
+@keyframes buttonShine {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
+@keyframes rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 8px rgba(0, 255, 204, 0.6); }
+  50% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.9); }
+  100% { box-shadow: 0 0 8px rgba(0, 255, 204, 0.6); }
+}
+
+/* Apply this class directly for always-on gradient border */
+.gradient-border {
+  border: 2px solid transparent !important;
+  background: linear-gradient(hsl(0deg 0% 12%), hsl(0deg 0% 12%)) padding-box,
+              linear-gradient(var(--angle), #00ffcc, #9933ff, #ff00ff, #00ffcc) border-box !important;
+  animation: rotate 4s linear infinite !important;
+  cursor: pointer !important;
+}
+
+/* For hover states, apply this class to the parent */
+.gradient-border-hover:hover {
+  border: 2px solid transparent !important;
+  background: linear-gradient(hsl(0deg 0% 12%), hsl(0deg 0% 12%)) padding-box,
+              linear-gradient(var(--angle), #00ffcc, #9933ff, #ff00ff, #00ffcc) border-box !important;
+  animation: rotate 4s linear infinite !important;
+  cursor: pointer !important;
+}
+
+/* Ensure all buttons and interactive elements have consistent cursor */
+button, 
+a,
+.project-button, 
+.project-card-button,
+.gradient-border,
+.color-link,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer !important;
+}
+
+/* Also ensure children of buttons maintain the pointer cursor */
+button *, 
+a *,
+.project-button *, 
+.project-card-button *,
+.gradient-border *,
+[role="button"] * {
+  cursor: pointer !important;
+}
+
+/* Bomb rolling animation */
+@keyframes bombRoll {
+  0% {
+    transform: translateX(0) rotate(0deg);
+  }
+  20% {
+    transform: translateX(calc(50vw + 55px)) rotate(720deg);
+  }
+  25% {
+    transform: translateX(calc(50vw + 55px)) rotate(720deg);
+    opacity: 0;
+  }
+  30% {
+    transform: translateX(calc(-50vw - 55px)) rotate(720deg);
+    opacity: 0;
+  }
+  35% {
+    transform: translateX(calc(-50vw - 55px)) rotate(720deg);
+  }
+  55% {
+    transform: translateX(0) rotate(1440deg);
+  }
+  100% {
+    transform: translateX(0) rotate(1440deg);
+  }
+}
+
+.bomb-roll {
+  animation: bombRoll 20s infinite ease-in-out;
+}
