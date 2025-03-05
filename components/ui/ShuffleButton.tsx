@@ -1,6 +1,12 @@
 import { Shuffle } from "lucide-react"
 
+/**
+ * Props for the ShuffleButton component
+ */
 interface ShuffleButtonProps {
+  /**
+   * Function to call when the button is clicked
+   */
   onClick: () => void
 }
 

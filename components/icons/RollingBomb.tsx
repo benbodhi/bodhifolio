@@ -2,7 +2,12 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
-export function RollingBomb() {
+/**
+ * Props for the RollingBomb component
+ */
+interface RollingBombProps {}
+
+export function RollingBomb({}: RollingBombProps) {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
 

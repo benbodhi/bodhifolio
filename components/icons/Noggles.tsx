@@ -1,4 +1,14 @@
-export function Noggles({ className }: { className?: string }) {
+/**
+ * Props for the Noggles icon component
+ */
+interface NogglesProps {
+  /**
+   * Additional CSS classes to apply to the SVG
+   */
+  className?: string
+}
+
+export function Noggles({ className }: NogglesProps) {
   return (
     <svg
       width="64"

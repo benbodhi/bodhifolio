@@ -5,7 +5,13 @@ import { ProjectCard } from "./ProjectCard"
 import { Project } from "@/lib/projects/types"
 import { ShuffleButton } from "@/components/ui/ShuffleButton"
 
+/**
+ * Props for the ProjectGrid component
+ */
 interface ProjectGridProps {
+  /**
+   * Initial list of projects to display in the grid
+   */
   initialProjects: Project[]
 }
 

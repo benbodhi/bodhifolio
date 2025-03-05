@@ -1,7 +1,12 @@
 import Image from "next/image"
 import Link from "next/link"
 
-export function Profile() {
+/**
+ * Props for the Profile component
+ */
+interface ProfileProps {}
+
+export function Profile({}: ProfileProps) {
   return (
     <section className="p-12">
       <div className="flex flex-col md:flex-row items-center justify-center gap-8">

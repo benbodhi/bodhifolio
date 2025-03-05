@@ -26,7 +26,7 @@ export type Project = {
 /**
  * Props for the ProjectCard component
  */
-export type ProjectItemProps = {
+export interface ProjectItemProps {
   project: Project
   isFirstInColumn?: boolean
 } 

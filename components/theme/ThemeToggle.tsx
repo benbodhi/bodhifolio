@@ -5,7 +5,12 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/Button"
 import { useEffect, useState } from "react"
 
-export function ThemeToggle() {
+/**
+ * Props for the ThemeToggle component
+ */
+interface ThemeToggleProps {}
+
+export function ThemeToggle({}: ThemeToggleProps) {
   const { setTheme, theme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
