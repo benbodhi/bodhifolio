@@ -159,39 +159,6 @@ Grid:
     font-weight: 700;
   }
 
-  .project-button {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    border-radius: 1rem;
-    background-color: #1a1a1a;
-    transition: all 300ms;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-  }
-
-  .project-button::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background: linear-gradient(90deg,#252525,#00ffcc,#9933ff,#ff00ff,#252525);
-    background-size: 200% 100%;
-    transition: opacity 300ms;
-  }
-
-  .project-button:hover {
-    background-color: #252525;
-  }
-
-  .project-button:hover::before {
-    opacity: 1;
-    animation: buttonShine 1s ease-in-out forwards;
-  }
-
   .project-card-button {
     display: inline-flex;
     align-items: center;
