@@ -1,9 +1,25 @@
 import Image from "next/image"
-import { ProjectItemProps } from "@/lib/projects/types"
+import { MediaItem, ProjectItemProps } from "@/lib/projects/types"
 import { cn } from "@/lib/utils"
 import { useState, useEffect, useCallback, useRef, memo } from "react"
 import Lightbox from "yet-another-react-lightbox"
 import "yet-another-react-lightbox/styles.css"
+import Video from "yet-another-react-lightbox/plugins/video"
+import MediaCarousel from "./MediaCarousel"
+
+// Define types for lightbox slides
+type LightboxSlide = {
+  src: string;
+} | {
+  type: 'video';
+  width: number;
+  height: number;
+  poster: string;
+  sources: {
+    src: string;
+    type: string;
+  }[];
+};
 
 // Function to format video URLs for embedding
 const formatVideoUrl = (url: string): string => {
@@ -291,19 +307,130 @@ const ImageCarousel = memo(({
 
 ImageCarousel.displayName = 'ImageCarousel';
 
+// Helper function to convert legacy media to unified format
+const convertLegacyMediaToUnified = (project: ProjectItemProps['project']): MediaItem[] => {
+  const media: MediaItem[] = [];
+  
+  // Add images
+  if (project.images && project.images.length > 0) {
+    project.images.forEach(src => {
+      media.push({
+        type: 'image',
+        src
+      });
+    });
+  } else if (project.image) {
+    media.push({
+      type: 'image',
+      src: project.image
+    });
+  }
+  
+  // Add video
+  if (project.videoUrl) {
+    media.push({
+      type: 'video',
+      src: project.videoUrl
+    });
+  }
+  
+  return media;
+};
+
 export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   
-  // Format images for lightbox
-  const lightboxImages = project.images 
-    ? project.images.map(src => ({ src }))
-    : project.image 
-      ? [{ src: project.image }] 
-      : [];
+  // Use the new unified media approach
+  const media = project.media || [];
   
-  // Handle image click to open lightbox
-  const handleImageClick = useCallback(() => {
+  // If no media is defined, create it from legacy fields
+  const unifiedMedia = media.length > 0 
+    ? media 
+    : convertLegacyMediaToUnified(project);
+  
+  // Find cover media item if specified
+  const coverMediaItem = unifiedMedia.find(item => item.isCover);
+  
+  // If there's a cover media item, show it first, otherwise show the first item
+  const displayMedia = coverMediaItem 
+    ? [coverMediaItem, ...unifiedMedia.filter(item => !item.isCover)]
+    : unifiedMedia;
+  
+  // Format media for lightbox
+  const lightboxSlides: LightboxSlide[] = unifiedMedia.map(item => {
+    if (item.type === 'image') {
+      // For images, just return the source
+      return { src: item.src };
+    } else {
+      // For videos, we need to format them for the lightbox video plugin
+      let videoId = '';
+      
+      // Extract YouTube video ID
+      if (item.src.includes('youtube.com') || item.src.includes('youtu.be')) {
+        if (item.src.includes('youtube.com/watch')) {
+          const urlParams = new URL(item.src).searchParams;
+          videoId = urlParams.get('v') || '';
+        } else if (item.src.includes('youtu.be/')) {
+          videoId = item.src.split('youtu.be/')[1]?.split('?')[0] || '';
+        } else if (item.src.includes('youtube.com/embed/')) {
+          videoId = item.src.split('youtube.com/embed/')[1]?.split('?')[0] || '';
+        }
+        
+        if (videoId) {
+          return {
+            type: 'video',
+            width: 1280,
+            height: 720,
+            poster: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            sources: [
+              {
+                src: `https://www.youtube.com/watch?v=${videoId}`,
+                type: 'video/mp4'
+              }
+            ]
+          };
+        }
+      }
+      
+      // Extract Vimeo video ID
+      if (item.src.includes('vimeo.com')) {
+        const vimeoId = item.src.split('vimeo.com/')[1]?.split('?')[0] || '';
+        if (vimeoId) {
+          return {
+            type: 'video',
+            width: 1280,
+            height: 1280,
+            poster: '',
+            sources: [
+              {
+                src: `https://vimeo.com/${vimeoId}`,
+                type: 'video/mp4'
+              }
+            ]
+          };
+        }
+      }
+      
+      // Default fallback
+      return {
+        type: 'video',
+        width: 1280,
+        height: 720,
+        poster: '',
+        sources: [
+          {
+            src: item.src,
+            type: 'video/mp4'
+          }
+        ]
+      };
+    }
+  });
+  
+  // Handle media click to open lightbox
+  const handleMediaClick = useCallback((index: number) => {
+    setLightboxIndex(index);
     setLightboxOpen(true);
   }, []);
   
@@ -313,27 +440,44 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         "p-12 [&>p:last-child]:mb-0",
         isFirstInColumn && "pt-0"
       )}>
-        {/* Image Carousel */}
-        {(project.image || project.images) && (
-          <ImageCarousel 
-            images={project.images}
-            image={project.image}
+        {/* Media Display */}
+        {displayMedia.length > 0 && (
+          <MediaCarousel 
+            media={displayMedia}
             title={project.title}
-            onImageClick={handleImageClick}
+            onMediaClick={handleMediaClick}
           />
         )}
         
-        {/* Lightbox */}
+        {/* Lightbox with video support */}
         <Lightbox
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
-          slides={lightboxImages}
+          slides={lightboxSlides as any}
           index={lightboxIndex}
+          plugins={[Video]}
+          carousel={{ 
+            finite: false
+          }}
+          controller={{ 
+            closeOnBackdropClick: true 
+          }}
+          render={{
+            buttonPrev: unifiedMedia.length > 1 ? undefined : () => null,
+            buttonNext: unifiedMedia.length > 1 ? undefined : () => null
+          }}
+          styles={{
+            container: { backgroundColor: "rgba(0, 0, 0, 0.9)" },
+            slide: { width: "100%", height: "100%" }
+          }}
+          video={{
+            autoPlay: true,
+            controls: true,
+            playsInline: true,
+            controlsList: "nodownload"
+          }}
         />
         
-        {/* Video - Using memoized component */}
-        {project.videoUrl && <VideoPlayer videoUrl={project.videoUrl} />}
-
         {/* Project Content - Memoized to prevent re-renders */}
         <ProjectContent 
           title={project.title}

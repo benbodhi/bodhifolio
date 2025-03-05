@@ -1,0 +1,70 @@
+# ProjectCard Media Enhancement Checklist
+
+## Core Requirements
+- [x] Support responsive media with natural aspect ratios
+- [x] Allow mixed media types (images and videos) in the same carousel
+- [x] Support specifying the order of media items
+- [x] Add option to designate a cover media item
+- [x] Enable videos to play both inline and in lightbox
+- [x] Implement dynamic container sizing for the carousel
+
+## Implementation Tasks
+
+### 1. Update Project Type Structure
+- [x] Create a unified `MediaItem` type
+  ```typescript
+  type MediaItem = {
+    type: 'image' | 'video';
+    src: string;
+    isCover?: boolean; // Optional flag to mark an item as the cover
+  }
+  ```
+- [x] Update the `Project` type to use the new media structure
+  ```typescript
+  type Project = {
+    // existing fields...
+    media?: MediaItem[];
+    // Remove or deprecate: image, images, videoUrl
+  }
+  ```
+- [x] Add migration strategy for existing projects
+
+### 2. Create Unified Media Components
+- [x] Develop a `MediaRenderer` component that can handle both images and videos
+- [x] Remove forced aspect ratio constraints
+- [x] Ensure full-width display with automatic height based on content
+- [x] Support responsive sizing for all media types
+
+### 3. Enhance Carousel Functionality
+- [x] Update carousel to handle mixed media types
+- [x] Implement smooth transitions between items with different aspect ratios
+- [x] Add support for dynamic container sizing
+- [x] Ensure proper playback controls for videos in the carousel
+
+### 4. Implement Cover Media Feature
+- [x] Add logic to identify and display the cover media item
+- [x] Ensure clicking the cover opens the lightbox with all media items
+- [x] Maintain the carousel functionality when no cover is specified
+
+### 5. Enhance Lightbox Integration
+- [x] Update lightbox to support video playback
+- [x] Ensure proper sizing and controls for videos in the lightbox
+- [x] Maintain smooth navigation between different media types in the lightbox
+
+### 6. Testing and Refinement
+- [ ] Test with various media aspect ratios
+- [ ] Test with different combinations of images and videos
+- [ ] Ensure smooth transitions and responsive behavior
+- [ ] Verify lightbox functionality with mixed media
+- [ ] Test cover media feature
+
+### 7. Documentation and Examples
+- [x] Update project data to use the new media format
+- [ ] Document best practices for aspect ratio management
+- [ ] Create examples of different media configurations
+
+## Additional Considerations
+- [x] Performance optimization for video loading
+- [x] Accessibility improvements for media controls
+- [ ] Mobile responsiveness testing
+- [ ] Fallback strategies for unsupported media types or formats 
