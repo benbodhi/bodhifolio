@@ -17,10 +17,6 @@ export const projects: Project[] = [
         src: `/nouner.lol-side-web.jpg`
       }
     ],
-    images: [
-      `/nouner.lol-mudsplash-web.jpg`,
-      `/nouner.lol-side-web.jpg`
-    ],
     links: [
       {
         label: `Instagram`,
@@ -29,7 +25,7 @@ export const projects: Project[] = [
       },
       {
         label: `nouner.lol`,
-        url: `#`,
+        url: `https://nouner.lol`,
         type: `secondary`
       }
     ]
@@ -69,9 +65,9 @@ export const projects: Project[] = [
   },
   {
     id: 4,
-    title: `Short Film`,
+    title: `Behind The Noggles`,
     type: `media`,
-    description: `Leo Clark made a short film documentary about my journey in Nouns and beyond.<br><a href="https://www.nouns.camp/proposals/461">Funded by Nouns - Prop 461</a>`,
+    description: `Leo Clark made a short film documentary about my journey in Nouns and beyond.<br><br><a href="https://www.nouns.camp/proposals/461">Funded by Nouns - Prop 461</a>`,
     media: [
       {
         type: 'video',
@@ -79,7 +75,6 @@ export const projects: Project[] = [
         isCover: true
       }
     ],
-    videoUrl: `https://youtu.be/B9xxBuckhxs`,
     links: []
   },
   {
@@ -94,7 +89,6 @@ export const projects: Project[] = [
         isCover: true
       }
     ],
-    videoUrl: `https://vimeo.com/1045807123`,
     listItems: [
       `CC0/Ethereum Podcast <a href="https://zeropod.xyz">ZEROPOD</a>`,
       `Daily Game <a href="https://nomo.wtf">NOMO Nouns</a>`,
