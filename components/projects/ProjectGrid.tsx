@@ -40,9 +40,7 @@ export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
     <section className="w-full">
       <div className="sticky top-4 z-40 container mx-auto px-4 mb-12">
         <div className="flex justify-center">
-          <div className="bg-[hsl(var(--background))] bg-opacity-80 backdrop-blur-sm p-2 rounded-full shadow-md">
-            <ShuffleButton onClick={handleShuffle} />
-          </div>
+          <ShuffleButton onClick={handleShuffle} />
         </div>
       </div>
 

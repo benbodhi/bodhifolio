@@ -17,14 +17,21 @@ Grid:
 1280+ = 3 cols  xl
 1920+ = 4 cols  3xl
 2160+ = 5 cols  4xl
-
 */
+
+/* ======================================
+   THEME CONFIGURATION
+   ====================================== */
 @theme {
   --breakpoint-3xl: 120rem;   /* 1920px */
   --breakpoint-4xl: 135rem;   /* 2160px */
 }
 
+/* ======================================
+   BASE STYLES
+   ====================================== */
 @layer base {
+  /* Theme Variables */
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -61,6 +68,7 @@ Grid:
     --radius-lg: 0.7rem;
   }
 
+  /* Dark Mode Variables */
   .dark {
     --background: 180 5% 8%;
     --foreground: 0 0% 98%;
@@ -92,6 +100,7 @@ Grid:
     --ring: 240 4.9% 83.9%;
   }
 
+  /* Global Element Styles */
   * {
     border-color: hsl(var(--border));
   }
@@ -101,7 +110,7 @@ Grid:
     color: hsl(var(--foreground));
   }
 
-  /* Global styles for interactive elements */
+  /* Interactive Element Styles */
   a, button, [role="button"], 
   input[type="button"], input[type="submit"], input[type="reset"],
   .cursor-pointer {
@@ -117,13 +126,12 @@ Grid:
   }
 }
 
+/* ======================================
+   UTILITY CLASSES
+   ====================================== */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
   }
   
   .touch-action-manipulation {
@@ -131,79 +139,22 @@ Grid:
   }
 }
 
+/* ======================================
+   COMPONENT STYLES
+   ====================================== */
 @layer components {
-  .gradient-link {
-    position: relative;
-    background: linear-gradient(150deg,#ccffef,#e6d9ff,#ffd9ff);
-    background-clip: text;
-    color: transparent;
-    transition: all 300ms;
-    cursor: pointer;
-  }
-
-  .gradient-link:hover {
-    background: linear-gradient(150deg,#00ffcc,#9933ff,#ff00ff,#00ffcc);
-    background-size: 300% auto;
-    animation: gradientOnce 1s ease-in-out forwards;
-    background-clip: text;
-    color: transparent;
+  /* Text Styles */
+  .title-text {
+    color: hsl(var(--foreground));
+    font-weight: 700;
   }
 
   .content-text {
     color: hsl(var(--content));
     font-size: 1rem;
   }
-  
-  .title-text {
-    color: hsl(var(--foreground));
-    font-weight: 700;
-  }
 
-  .project-card-button {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    border-radius: 1rem;
-    transition: all 300ms;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    
-    /* Light mode styles */
-    background-color: transparent !important;
-    border: 2px solid hsl(240, 5.9%, 85%);
-    color: hsl(var(--foreground));
-    
-    /* Dark mode styles */
-    .dark & {
-      background-color: hsl(0deg, 0%, 14%) !important;
-      border: 2px solid hsl(0deg, 0%, 14%);
-      color: hsl(var(--content));
-    }
-  }
-
-  .project-card-button:active {
-    transform: scale(0.95);
-  }
-
-  .project-card-button:hover {
-    border: 2px solid transparent;
-    
-    /* Light mode hover */
-    background: linear-gradient(hsl(240 10% 20%), hsl(240 10% 20%)) padding-box,
-                linear-gradient(to right, #00ffcc, #9933ff, #ff00ff) border-box !important;
-    color: white;
-    
-    /* Dark mode hover */
-    .dark & {
-      background: linear-gradient(hsl(0deg 0% 12%), hsl(0deg 0% 12%)) padding-box,
-                  linear-gradient(to right, #00ffcc, #9933ff, #ff00ff) border-box !important;
-    }
-  }
-
-  /* Color transitioning link */
+  /* Link Styles */
   .color-link {
     position: relative;
     color: #00ffcc;
@@ -215,62 +166,64 @@ Grid:
     animation: colorCycle 15s infinite linear;
   }
 
-  @keyframes colorCycle {
-    0%, 100% { color: #00ffcc; } /* Teal */
-    16.6% { color: #9933ff; } /* Purple */
-    33.3% { color: #ff00ff; } /* Pink */
-    50% { color: #ff6600; } /* Orange */
-    66.6% { color: #ffcc00; } /* Yellow */
-    83.3% { color: #ff3333; } /* Red */
+  /* Button Styles */
+  .project-card-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 1rem;
+    transition: all 0s;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    border: 2px solid hsl(var(--border));
+    background-color: hsl(var(--background));
+  }
+
+  .project-card-button:active {
+    transform: scale(0.95);
+  }
+
+  .project-card-button:hover {
+    border: 2px solid transparent;
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-image: 
+      linear-gradient(hsl(var(--background)), hsl(var(--background))),
+      linear-gradient(var(--gradient-angle), #00ffcc, #9933ff, #ff00ff);
+    animation: gradientRotate 2s linear forwards;
+  }
+
+  .dark .project-card-button:hover {
+    border: 2px solid transparent;
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-image: 
+      linear-gradient(hsl(var(--background)), hsl(var(--background))),
+      linear-gradient(var(--gradient-angle), #00ffcc, #9933ff, #ff00ff);
+    animation: gradientRotate 2s linear forwards;
+  }
+
+  @keyframes gradientRotate {
+    0% {
+      --gradient-angle: 135deg;
+    }
+    100% {
+      --gradient-angle: 225deg;
+    }
+  }
+
+  /* Animation Styles */
+  .bomb-roll {
+    animation: bombRoll 20s infinite ease-in-out;
   }
 }
 
-@property --angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes gradientOnce {
-  0% { background-position: 0% center; }
-  100% { background-position: 100% center; }
-}
-
-@keyframes buttonShine {
-  0% { background-position: 100% 0; }
-  100% { background-position: 0 0; }
-}
-
-@keyframes rotate {
-  to {
-    --angle: 360deg;
-  }
-}
-
-@keyframes pulse-glow {
-  0% { box-shadow: 0 0 8px rgba(0, 255, 204, 0.6); }
-  50% { box-shadow: 0 0 15px rgba(0, 255, 204, 0.9); }
-  100% { box-shadow: 0 0 8px rgba(0, 255, 204, 0.6); }
-}
-
-/* Apply this class directly for always-on gradient border */
-.gradient-border {
-  border: 2px solid transparent !important;
-  background: linear-gradient(hsl(0deg 0% 12%), hsl(0deg 0% 12%)) padding-box,
-              linear-gradient(var(--angle), #00ffcc, #9933ff, #ff00ff, #00ffcc) border-box !important;
-  animation: rotate 4s linear infinite !important;
-  cursor: pointer !important;
-}
-
-/* For hover states, apply this class to the parent */
-.gradient-border-hover:hover {
-  border: 2px solid transparent !important;
-  background: linear-gradient(hsl(0deg 0% 12%), hsl(0deg 0% 12%)) padding-box,
-              linear-gradient(var(--angle), #00ffcc, #9933ff, #ff00ff, #00ffcc) border-box !important;
-  animation: rotate 4s linear infinite !important;
-  cursor: pointer !important;
-}
-
+/* ======================================
+   CURSOR CONSISTENCY
+   ====================================== */
 /* Ensure all buttons and interactive elements have consistent cursor */
 button, 
 a,
@@ -295,7 +248,62 @@ a *,
   cursor: pointer !important;
 }
 
-/* Bomb rolling animation */
+/* ======================================
+   CUSTOM PROPERTIES
+   ====================================== */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --gradient-direction {
+  syntax: '<angle> | to <position>';
+  initial-value: to right bottom;
+  inherits: false;
+}
+
+@property --gradient-angle {
+  syntax: '<angle>';
+  initial-value: 135deg;
+  inherits: false;
+}
+
+/* ======================================
+   ANIMATIONS
+   ====================================== */
+@keyframes colorCycle {
+  0%, 100% { color: #0ff0fe; }
+  5% { color: #17e7fb; }
+  10% { color: #00c3ff; }
+  15% { color: #00a4ff; }
+  20% { color: #0080ff; }
+  25% { color: #4d4dff; }
+  30% { color: #8000ff; }
+  35% { color: #bc13fe; }
+  40% { color: #df01ff; }
+  45% { color: #ff00ff; }
+  50% { color: #ff00c8; }
+  55% { color: #ff0099; }
+  60% { color: #fe019a; }
+  65% { color: #fd1d53; }
+  70% { color: #ff3881; }
+  75% { color: #f706cf; }
+  80% { color: #c651f0; }
+  85% { color: #7b61ff; }
+  90% { color: #25d0f5; }
+  95% { color: #0cedf5; }
+}
+
+@keyframes rotate {
+  0% {
+    --angle: 0deg;
+  }
+  100% {
+    --angle: 360deg;
+  }
+}
+
 @keyframes bombRoll {
   0% {
     transform: translateX(0) rotate(0deg);
@@ -322,6 +330,90 @@ a *,
   }
 }
 
-.bomb-roll {
-  animation: bombRoll 20s infinite ease-in-out;
+/* ======================================
+   SHUFFLE BUTTON STYLES
+   ====================================== */
+@keyframes spin {
+  from {
+    transform: translate(-50%, 0) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, 0) rotate(360deg);
+  }
+}
+
+.shuffle-button-inner:hover {
+  border: 2px solid transparent;
+  background-color: hsl(240 10% 20%);
+  background: linear-gradient(hsl(240 10% 20%), hsl(240 10% 20%)) padding-box,
+              conic-gradient(
+                from var(--angle),
+                #00ffcc,
+                #ff00ff,
+                #9933ff,
+                #00ffcc,
+                #ff00ff,
+                #9933ff,
+                #00ffcc
+              ) border-box;
+  /* 
+  Alternative with more control over repetition:
+  background: linear-gradient(hsl(240 10% 20%), hsl(240 10% 20%)) padding-box,
+              repeating-conic-gradient(
+                from var(--angle),
+                #00ffcc 0%,
+                #ff00ff 15%,
+                #9933ff 30%,
+                #00ffcc 45%
+              ) border-box;
+  
+  Animation options:
+  - Change duration: rotate 2s linear infinite (faster) or rotate 8s linear infinite (slower)
+  - Change timing: rotate 4s ease infinite (smooth) or rotate 4s ease-in-out infinite (accelerate/decelerate)
+  - Change direction: rotate 4s linear infinite reverse (opposite direction)
+  */
+  animation: rotate 4s linear infinite;
+}
+
+.dark .shuffle-button-inner:hover {
+  background-color: hsl(0deg 0% 12%);
+  background: linear-gradient(hsl(0deg 0% 12%), hsl(0deg 0% 12%)) padding-box,
+              conic-gradient(
+                from var(--angle),
+                #00ffcc,
+                #ff00ff,
+                #9933ff,
+                #00ffcc,
+                #ff00ff,
+                #9933ff,
+                #00ffcc,
+                #ff00ff,
+                #9933ff,
+                #00ffcc
+              ) border-box;
+  animation: rotate 4s linear infinite;
+}
+
+.shuffle-icon-spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Add a transition for the shuffle icon container */
+.shuffle-icon-container {
+  transition: transform 0.5s ease-out;
+}
+
+/* Apply the spin animation on hover */
+.shuffle-button-inner:hover .shuffle-icon-container {
+  animation: spin 1s linear infinite;
+}
+
+/* Change the icon color to white on hover */
+.shuffle-button-inner:hover .shuffle-icon-container svg {
+  color: white;
+}
+
+/* Change the text color to white on hover */
+.shuffle-button-inner:hover .shuffle-text {
+  color: white;
 }

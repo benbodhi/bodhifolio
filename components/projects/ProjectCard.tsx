@@ -196,7 +196,7 @@ const ProjectContent = memo(({
 
 ProjectContent.displayName = 'ProjectContent';
 
-// Image carousel component
+// Image carousel component with CSS-based crossfade
 const ImageCarousel = memo(({ 
   images, 
   image, 
@@ -208,72 +208,81 @@ const ImageCarousel = memo(({
   title: string;
   onImageClick: () => void;
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [nextIndex, setNextIndex] = useState<number | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const hasMultipleImages = images && images.length > 1;
-  
-  useEffect(() => {
-    if (!hasMultipleImages) return;
-    
-    const startTransition = () => {
-      if (images) {
-        const next = (currentIndex + 1) % images.length;
-        setNextIndex(next);
-        setIsTransitioning(true);
-        
-        // After transition completes, update current image
-        setTimeout(() => {
-          setCurrentIndex(next);
-          setNextIndex(null);
-          setIsTransitioning(false);
-        }, 1000); // 1 second transition
-      }
-    };
-    
-    intervalRef.current = setInterval(startTransition, 4000);
-    
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [currentIndex, hasMultipleImages, images]);
-  
-  return (
-    <div 
-      className="relative w-full aspect-video mb-8 rounded-lg overflow-hidden cursor-pointer"
-      onClick={onImageClick}
-    >
-      <div className="absolute inset-0">
-        {/* Current image */}
+  // For single image, just render it directly
+  if (!images || images.length <= 1) {
+    return (
+      <div 
+        className="relative w-full aspect-video mb-8 rounded-lg overflow-hidden cursor-pointer"
+        onClick={onImageClick}
+      >
         <Image 
-          src={images ? images[currentIndex] : image!}
+          src={image || (images && images[0]) || ''}
           alt={title}
           fill 
           priority
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
+      </div>
+    );
+  }
+  
+  // For multiple images, use a simple index state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [previousIndex, setPreviousIndex] = useState(images.length - 1);
+  
+  // Set up the rotation interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPreviousIndex(currentIndex);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [currentIndex, images.length]);
+  
+  return (
+    <div 
+      className="relative w-full aspect-video mb-8 rounded-lg overflow-hidden cursor-pointer bg-black"
+      onClick={onImageClick}
+    >
+      {/* Background layer - always the current image */}
+      <div className="absolute inset-0">
+        <Image 
+          src={images[currentIndex]}
+          alt={`${title} - background`}
+          fill 
+          priority
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      </div>
+      
+      {/* Render all images with CSS transitions */}
+      {images.map((src, index) => {
+        // Only render the current and previous images for performance
+        if (index !== currentIndex && index !== previousIndex) return null;
         
-        {/* Next image for crossfade */}
-        {nextIndex !== null && images && (
+        return (
           <div 
+            key={src}
             className="absolute inset-0 transition-opacity duration-1000"
-            style={{ opacity: isTransitioning ? 1 : 0 }}
+            style={{ 
+              opacity: index === currentIndex ? 1 : index === previousIndex ? 0 : 0,
+              zIndex: index === currentIndex ? 2 : 1
+            }}
           >
             <Image 
-              src={images[nextIndex]}
-              alt={title}
+              src={src}
+              alt={`${title} - image ${index + 1}`}
               fill 
+              priority={index === 0}
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           </div>
-        )}
-      </div>
+        );
+      })}
     </div>
   );
 });
