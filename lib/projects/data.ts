@@ -65,17 +65,10 @@ export const projects: Project[] = [
   },
   {
     id: 5,
+    videoUrl: `https://vimeo.com/1045807123`,
     title: `Zero Rights Media`,
     type: `media`,
-    description: `Co-founder and team member of the onchain media collective fka The Noun Square.
-
-CC0/Ethereum Podcast ZEROPOD
-
-Daily Game NOMONOUNS
-
-The Noun Square Weekly 𝕏 Space
-
-Clanker Podcast Must Clank`,
+    description: `Co-founder and team member of the onchain media collective Zero Rights Media (formerly known as The Noun Square).<br><br>The Ethereum ecosystem is open source, and it deserves media content that is too.`,
     listItems: [
       `CC0/Ethereum Podcast <a href="https://zeropod.xyz">ZEROPOD</a>`,
       `Daily Game <a href="https://nomo.wtf">NOMO Nouns</a>`,
@@ -94,7 +87,7 @@ Clanker Podcast Must Clank`,
     id: 6,
     title: `Mr. Bill's Tunes`,
     type: `resource`,
-    description: `I've been fortunate to not only be a good friend of Bill's but to also work together on Mr. Bill's Tunes since the beginning, back in 2010. The site is an Ableton Live mastery gold mine.`,
+    description: `I've been fortunate to not only be a good friend of Bill's but to build Mr. Bill's Tunes with him since the beginning, back in 2010.<br><br>The site is an Ableton Live mastery gold mine!`,
     listItems: [
       `The Art of Mr. Bill Tutorial Series`,
       `Ableton Devices Tutorials`,
@@ -102,9 +95,9 @@ Clanker Podcast Must Clank`,
       `Reverse Engineer Project Files`,
       `Studio Live Streams`,
       `HCA Feed (Tips & Tricks)`,
-      `The Mr. Bill Podcast`
+      `The Mr. Bill Podcast Early Access`
     ],
-    promo: `Use code BENBODHI for 10% off`,
+    promo: `Use code BENBODHILOVESYOU for 10% off`,
     links: [
       {
         label: `mrbillstunes.com`,

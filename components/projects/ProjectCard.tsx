@@ -82,7 +82,7 @@ const VideoPlayer = memo(({ videoUrl }: { videoUrl: string }) => {
             href={videoUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-sm color-link"
+            className="text-sm"
           >
             Open video in new tab
           </a>
@@ -158,7 +158,7 @@ const ProjectContent = memo(({
       
       {promo && (
         <div 
-          className="bg-[hsl(var(--border))] p-3 rounded-md text-sm font-medium mb-8 text-[hsl(var(--content))]"
+          className="bg-black/20 p-3 rounded-md text-sm font-medium mb-8 text-[hsl(var(--content))]"
           dangerouslySetInnerHTML={{ __html: promo.replace(/<a /g, '<a class="color-link" ') }}
         />
       )}

@@ -180,10 +180,6 @@
   /* Link Styles */
   .color-link {
     position: relative;
-    color: #00ffcc;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    text-decoration-thickness: 1px;
     transition: color 1000ms;
     cursor: pointer;
     animation: colorCycle 15s infinite linear;
