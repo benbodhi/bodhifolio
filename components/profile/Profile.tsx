@@ -1,8 +1,7 @@
-import { Github } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
-export default function Profile() {
+export function Profile() {
   return (
     <section className="p-12">
       <div className="flex flex-col md:flex-row items-center justify-center gap-8">

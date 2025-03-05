@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
-const RollingBomb = () => {
+export function RollingBomb() {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -127,6 +127,4 @@ const RollingBomb = () => {
       </svg>
     </div>
   );
-};
-
-export default RollingBomb; 
+} 

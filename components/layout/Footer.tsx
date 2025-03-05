@@ -1,5 +1,5 @@
 import { Noggles } from "@/components/icons/Noggles"
-import RollingBomb from "@/components/icons/RollingBomb"
+import { RollingBomb } from "@/components/icons/RollingBomb"
 
 export function Footer() {
   return (
