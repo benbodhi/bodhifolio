@@ -81,7 +81,7 @@ export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
         </div>
 
         {/* Three column layout */}
-        <div className="hidden xl:flex 2xl:hidden gap-[1px]">
+        <div className="hidden xl:flex 3xl:hidden gap-[1px]">
           {[0, 1, 2].map((colIndex) => (
             <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
               {orderedProjects
@@ -101,7 +101,7 @@ export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
         </div>
 
         {/* Four column layout */}
-        <div className="hidden 2xl:flex 3xl:hidden gap-[1px]">
+        <div className="hidden 3xl:flex 4xl:hidden gap-[1px]">
           {[0, 1, 2, 3].map((colIndex) => (
             <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
               {orderedProjects
@@ -121,7 +121,7 @@ export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
         </div>
 
         {/* Five column layout */}
-        <div className="hidden 3xl:flex gap-[1px]">
+        <div className="hidden 4xl:flex gap-[1px]">
           {[0, 1, 2, 3, 4].map((colIndex) => (
             <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
               {orderedProjects

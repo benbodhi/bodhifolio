@@ -8,20 +8,14 @@ const config: Config = {
     './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
+    // container: {
+    //   center: true,
+    //   padding: "2rem",
+    //   screens: {
+    //     "2xl": "1400px",
+    //   },
+    // },
     extend: {
-      screens: {
-        'md': '768px',    // 2 columns
-        'xl': '1280px',   // 3 columns
-        '2xl': '1920px',  // 4 columns
-        '3xl': '2560px',  // 5 columns
-      },
       fontFamily: {
         // Nouns Name Service (NNS) font - Modified Londrina Solid with support for .⌐◨-◨
         nns: ['var(--font-nns)', 'sans-serif'],
