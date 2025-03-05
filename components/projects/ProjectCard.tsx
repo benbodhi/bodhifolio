@@ -138,6 +138,8 @@ const ProjectContent = memo(({
 }) => {
   return (
     <>
+      <hr className="gradient-hr h-1 w-16 mb-8 border-0 rounded-sm"></hr>
+      
       <h3 className="text-3xl title-text mb-8">{title}</h3>
       
       <div className="content-text mb-8 text-[hsl(var(--content))]" dangerouslySetInnerHTML={{ 

@@ -3,35 +3,58 @@
 @import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/*
-Defaults:
-sm	40rem (640px)   @media (width >= 40rem) { ... }
-md	48rem (768px)	  @media (width >= 48rem) { ... }
-lg	64rem (1024px)	@media (width >= 64rem) { ... }
-xl	80rem (1280px)	@media (width >= 80rem) { ... }
-2xl	96rem (1536px)	@media (width >= 96rem) { ... }
+/*============================================================================
+  TAILWIND CONFIGURATION
+  
+  Default Breakpoints:
+  sm	40rem (640px)   @media (width >= 40rem) { ... }
+  md	48rem (768px)	  @media (width >= 48rem) { ... }
+  lg	64rem (1024px)	@media (width >= 64rem) { ... }
+  xl	80rem (1280px)	@media (width >= 80rem) { ... }
+  2xl	96rem (1536px)	@media (width >= 96rem) { ... }
 
-Grid:
-0+    = 1 col   no prefix
-768+  = 2 cols  md
-1280+ = 3 cols  xl
-1920+ = 4 cols  3xl
-2160+ = 5 cols  4xl
-*/
+  Grid Layout:
+  0+    = 1 col   no prefix
+  768+  = 2 cols  md
+  1280+ = 3 cols  xl
+  1920+ = 4 cols  3xl (custom breakpoint)
+  2160+ = 5 cols  4xl (custom breakpoint)
+============================================================================*/
 
-/* ======================================
-   THEME CONFIGURATION
-   ====================================== */
+/*============================================================================
+  THEME CONFIGURATION
+============================================================================*/
 @theme {
-  --breakpoint-3xl: 120rem;   /* 1920px */
-  --breakpoint-4xl: 135rem;   /* 2160px */
+  --breakpoint-3xl: 120rem;   /* (1920px) @media (width >= 120rem) { ... } */
+  --breakpoint-4xl: 135rem;   /* (2160px) @media (width >= 135rem) { ... } */
 }
 
-/* ======================================
-   BASE STYLES
-   ====================================== */
+/*============================================================================
+  CUSTOM PROPERTIES
+============================================================================*/
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --gradient-angle {
+  syntax: '<angle>';
+  initial-value: 135deg;
+  inherits: false;
+}
+
+@property --gradient-direction {
+  syntax: '<angle> | to <position>';
+  initial-value: to right bottom;
+  inherits: false;
+}
+
+/*============================================================================
+  BASE STYLES
+============================================================================*/
 @layer base {
-  /* Theme Variables */
+  /* Theme Variables - Light Mode */
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
@@ -68,7 +91,7 @@ Grid:
     --radius-lg: 0.7rem;
   }
 
-  /* Dark Mode Variables */
+  /* Theme Variables - Dark Mode */
   .dark {
     --background: 180 5% 8%;
     --foreground: 0 0% 98%;
@@ -126,9 +149,9 @@ Grid:
   }
 }
 
-/* ======================================
-   UTILITY CLASSES
-   ====================================== */
+/*============================================================================
+  UTILITY CLASSES
+============================================================================*/
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -139,9 +162,9 @@ Grid:
   }
 }
 
-/* ======================================
-   COMPONENT STYLES
-   ====================================== */
+/*============================================================================
+  COMPONENT STYLES
+============================================================================*/
 @layer components {
   /* Text Styles */
   .title-text {
@@ -206,24 +229,15 @@ Grid:
     animation: gradientRotate 2s linear forwards;
   }
 
-  @keyframes gradientRotate {
-    0% {
-      --gradient-angle: 135deg;
-    }
-    100% {
-      --gradient-angle: 225deg;
-    }
-  }
-
   /* Animation Styles */
   .bomb-roll {
     animation: bombRoll 20s infinite ease-in-out;
   }
 }
 
-/* ======================================
-   CURSOR CONSISTENCY
-   ====================================== */
+/*============================================================================
+  CURSOR CONSISTENCY
+============================================================================*/
 /* Ensure all buttons and interactive elements have consistent cursor */
 button, 
 a,
@@ -248,51 +262,91 @@ a *,
   cursor: pointer !important;
 }
 
-/* ======================================
-   CUSTOM PROPERTIES
-   ====================================== */
-@property --angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
+/*============================================================================
+  ANIMATIONS
+============================================================================*/
+/* Gradient Rotation Animation */
+@keyframes gradientRotate {
+  0% {
+    --gradient-angle: 135deg;
+  }
+  100% {
+    --gradient-angle: 225deg;
+  }
 }
 
-@property --gradient-direction {
-  syntax: '<angle> | to <position>';
-  initial-value: to right bottom;
-  inherits: false;
-}
-
-@property --gradient-angle {
-  syntax: '<angle>';
-  initial-value: 135deg;
-  inherits: false;
-}
-
-/* ======================================
-   ANIMATIONS
-   ====================================== */
+/* Color Cycle Animations */
 @keyframes colorCycle {
-  0%, 100% { color: #0ff0fe; }
-  5% { color: #17e7fb; }
-  10% { color: #00c3ff; }
-  15% { color: #00a4ff; }
-  20% { color: #0080ff; }
-  25% { color: #4d4dff; }
-  30% { color: #8000ff; }
-  35% { color: #bc13fe; }
-  40% { color: #df01ff; }
-  45% { color: #ff00ff; }
-  50% { color: #ff00c8; }
-  55% { color: #ff0099; }
-  60% { color: #fe019a; }
-  65% { color: #fd1d53; }
-  70% { color: #ff3881; }
-  75% { color: #f706cf; }
-  80% { color: #c651f0; }
-  85% { color: #7b61ff; }
-  90% { color: #25d0f5; }
-  95% { color: #0cedf5; }
+  0%, 100% { color: #00ffcc; }
+  5% { color: #00e0e0; }
+  10% { color: #00a0ff; }
+  15% { color: #5580ff; }
+  20% { color: #8040ff; }
+  25% { color: #9933ff; }
+  30% { color: #bb10ff; }
+  35% { color: #dd00ff; }
+  40% { color: #ff00ff; }
+  45% { color: #ff00bb; }
+  50% { color: #ff3377; }
+  55% { color: #ff3377; }
+  60% { color: #ff00bb; }
+  65% { color: #ff00ff; }
+  70% { color: #dd00ff; }
+  75% { color: #bb10ff; }
+  80% { color: #9933ff; }
+  85% { color: #8040ff; }
+  90% { color: #5580ff; }
+  95% { color: #00a0ff; }
+}
+
+@keyframes colorCycleLight {
+  /* Light mode: content is 240 10% 20% (dark grayish blue) */
+  /* Dark mode: content is 0deg 0% 79% (light gray) */
+  /* We'll create subtle tints by mixing the colors with the content color */
+  0%, 100% { color: hsl(160, 70%, 40%); }
+  5% { color: hsl(180, 60%, 40%); }
+  10% { color: hsl(210, 60%, 50%); }
+  15% { color: hsl(230, 50%, 55%); }
+  20% { color: hsl(250, 50%, 50%); }
+  25% { color: hsl(270, 50%, 45%); }
+  30% { color: hsl(280, 45%, 45%); }
+  35% { color: hsl(290, 45%, 45%); }
+  40% { color: hsl(300, 45%, 45%); }
+  45% { color: hsl(320, 45%, 45%); }
+  50% { color: hsl(340, 45%, 50%); }
+  55% { color: hsl(340, 45%, 50%); }
+  60% { color: hsl(320, 45%, 45%); }
+  65% { color: hsl(300, 45%, 45%); }
+  70% { color: hsl(290, 45%, 45%); }
+  75% { color: hsl(280, 45%, 45%); }
+  80% { color: hsl(270, 50%, 45%); }
+  85% { color: hsl(250, 50%, 50%); }
+  90% { color: hsl(230, 50%, 55%); }
+  95% { color: hsl(210, 60%, 50%); }
+}
+
+@keyframes colorCycleLightDark {
+  /* Dark mode version with colors that blend with 0deg 0% 79% */
+  0%, 100% { color: hsl(160, 40%, 70%); }
+  5% { color: hsl(180, 35%, 70%); }
+  10% { color: hsl(210, 35%, 70%); }
+  15% { color: hsl(230, 30%, 70%); }
+  20% { color: hsl(250, 30%, 70%); }
+  25% { color: hsl(270, 30%, 70%); }
+  30% { color: hsl(280, 30%, 70%); }
+  35% { color: hsl(290, 30%, 70%); }
+  40% { color: hsl(300, 30%, 70%); }
+  45% { color: hsl(320, 30%, 70%); }
+  50% { color: hsl(340, 30%, 70%); }
+  55% { color: hsl(340, 30%, 70%); }
+  60% { color: hsl(320, 30%, 70%); }
+  65% { color: hsl(300, 30%, 70%); }
+  70% { color: hsl(290, 30%, 70%); }
+  75% { color: hsl(280, 30%, 70%); }
+  80% { color: hsl(270, 30%, 70%); }
+  85% { color: hsl(250, 30%, 70%); }
+  90% { color: hsl(230, 30%, 70%); }
+  95% { color: hsl(210, 35%, 70%); }
 }
 
 @keyframes rotate {
@@ -330,9 +384,6 @@ a *,
   }
 }
 
-/* ======================================
-   SHUFFLE BUTTON STYLES
-   ====================================== */
 @keyframes spin {
   from {
     transform: translate(-50%, 0) rotate(0deg);
@@ -342,6 +393,25 @@ a *,
   }
 }
 
+/*============================================================================
+  COMPONENT-SPECIFIC STYLES
+============================================================================*/
+/* Subtle Color Link Styles */
+.color-link-light {
+  position: relative;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: color 1000ms;
+  cursor: pointer;
+  animation: colorCycleLight 15s infinite linear;
+}
+
+.dark .color-link-light {
+  animation: colorCycleLightDark 15s infinite linear;
+}
+
+/* Shuffle Button Styles */
 .shuffle-button-inner:hover {
   border: 2px solid transparent;
   background-color: hsl(240 10% 20%);
@@ -398,22 +468,23 @@ a *,
   animation: spin 1s linear infinite;
 }
 
-/* Add a transition for the shuffle icon container */
 .shuffle-icon-container {
   transition: transform 0.5s ease-out;
 }
 
-/* Apply the spin animation on hover */
 .shuffle-button-inner:hover .shuffle-icon-container {
   animation: spin 1s linear infinite;
 }
 
-/* Change the icon color to white on hover */
 .shuffle-button-inner:hover .shuffle-icon-container svg {
   color: white;
 }
 
-/* Change the text color to white on hover */
 .shuffle-button-inner:hover .shuffle-text {
   color: white;
+}
+
+/* Gradient HR style */
+.gradient-hr {
+  background: linear-gradient(to right, #ff00ff, #9933ff 42%, #9933ff 60%, #00ffcc);
 }
