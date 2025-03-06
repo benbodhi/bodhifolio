@@ -26,32 +26,29 @@
   position: relative;
 }
 
+.embla__viewport {
+  overflow: hidden;
+}
+
 .embla__container {
-  display: block; /* Changed from flex to block to prevent sliding */
+  display: flex;
   width: 100%;
-  position: relative; /* Needed for absolute positioning of slides */
   height: 100%;
 }
 
 .embla__slide {
-  position: absolute; /* All slides are absolutely positioned */
-  top: 0;
-  left: 0;
+  flex: 0 0 100%;
+  min-width: 0;
+  position: relative;
   width: 100%;
   height: 100%;
-  opacity: 0;
-  transition: opacity 0.8s ease-in-out;
-  pointer-events: none; /* Disable pointer events on hidden slides */
-  z-index: 1; /* Ensure all slides have a z-index */
-  visibility: visible; /* Keep all slides visible to prevent black flash */
+  z-index: 1; /* Add z-index for proper stacking */
 }
 
-/* Make the active slide visible */
+/* The fade plugin will handle the opacity transitions automatically */
 .embla__slide.is-selected {
-  opacity: 1;
   z-index: 2;
-  position: relative; /* Keep the selected slide in the flow */
-  pointer-events: auto; /* Enable pointer events on visible slide */
+  pointer-events: auto;
 }
 
 /* Media Item Wrapper */

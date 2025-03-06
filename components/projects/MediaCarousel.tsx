@@ -2,6 +2,7 @@
 
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import Fade from 'embla-carousel-fade';
 import type { MediaItem } from "@/lib/projects/types";
 import "./media-carousel.css";
 // Import GLightbox styles
@@ -114,14 +115,12 @@ const MediaItemComponent = ({ item }: { item: MediaItem }) => {
 };
 
 const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
-  // Configure Embla for pure crossfade with no sliding
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+  // Configure Embla with fade plugin
+  const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: media.length > 1,
     align: "center",
-    axis: "y", // Use vertical axis to prevent horizontal sliding
-    skipSnaps: true, // Allow skipping to any slide
-    dragFree: true, // Prevent dragging behavior
-  });
+    containScroll: false // Recommended when using fade plugin
+  }, [Fade()]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const lightboxRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -288,33 +287,15 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
     };
   }, [projectId, displayMedia.length]);
   
-  // Handle index updates when swiping
+  // Handle slide selection
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     
-    // Get the current index
-    const selectedIndex = emblaApi.selectedScrollSnap();
-    setCurrentIndex(selectedIndex);
-    
-    // Apply 'is-selected' class to the active slide for crossfade effect
-    const slides = emblaApi.slideNodes();
-    
-    // First remove the class from all slides
-    slides.forEach(slide => {
-      slide.classList.remove('is-selected');
-    });
-    
-    // Then add it to the selected slide with a small delay for smoother transition
-    if (slides[selectedIndex]) {
-      // Use setTimeout to ensure the removal is processed first
-      setTimeout(() => {
-        slides[selectedIndex].classList.add('is-selected');
-      }, 10);
-    }
+    setCurrentIndex(emblaApi.selectedScrollSnap());
     
     // Update container height based on current slide
     if (containerRef.current) {
-      const slideNode = slides[selectedIndex];
+      const slideNode = emblaApi.slideNodes()[emblaApi.selectedScrollSnap()];
       if (slideNode) {
         const img = slideNode.querySelector('img');
         if (img && img.complete && containerRef.current) {
@@ -331,20 +312,8 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
     if (emblaApi) {
       emblaApi.on("select", onSelect);
       
-      // Initial setup for crossfade
+      // Initial setup
       emblaApi.on("init", () => {
-        // Apply 'is-selected' class to the initial slide
-        const slides = emblaApi.slideNodes();
-        const selectedIndex = emblaApi.selectedScrollSnap();
-        
-        slides.forEach((slide, index) => {
-          if (index === selectedIndex) {
-            slide.classList.add('is-selected');
-          } else {
-            slide.classList.remove('is-selected');
-          }
-        });
-        
         setTimeout(onSelect, 100);
       });
       
@@ -414,31 +383,28 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   useEffect(() => {
     if (!emblaApi) return;
     
-    // Apply 'is-selected' class to the initial slide immediately
-    const slides = emblaApi.slideNodes();
-    if (slides.length > 0) {
-      slides[0].classList.add('is-selected');
-    }
-    
     // Update height for the first slide
-    if (containerRef.current && slides.length > 0) {
-      const firstSlide = slides[0];
-      const img = firstSlide.querySelector('img');
-      if (img) {
-        if (img.complete) {
-          const height = img.offsetHeight;
-          if (height > 0) {
-            containerRef.current.style.height = `${height}px`;
-          }
-        } else {
-          img.onload = () => {
-            if (containerRef.current) {
-              const height = img.offsetHeight;
-              if (height > 0) {
-                containerRef.current.style.height = `${height}px`;
-              }
+    if (containerRef.current) {
+      const slides = emblaApi.slideNodes();
+      if (slides.length > 0) {
+        const firstSlide = slides[0];
+        const img = firstSlide.querySelector('img');
+        if (img) {
+          if (img.complete) {
+            const height = img.offsetHeight;
+            if (height > 0) {
+              containerRef.current.style.height = `${height}px`;
             }
-          };
+          } else {
+            img.onload = () => {
+              if (containerRef.current) {
+                const height = img.offsetHeight;
+                if (height > 0) {
+                  containerRef.current.style.height = `${height}px`;
+                }
+              }
+            };
+          }
         }
       }
     }
