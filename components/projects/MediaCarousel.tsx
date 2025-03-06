@@ -133,9 +133,14 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   const coverItem = media.find(item => item.isCover);
   const displayMedia = coverItem ? [coverItem] : media;
 
-  // Only enable loop mode if there are at least 3 slides
-  const hasEnoughSlidesForLoop = displayMedia.length >= 3;
-  const shouldLoop = !coverItem && hasEnoughSlidesForLoop;
+  // Determine if we should use loop mode
+  // We need at least 4 slides for loop mode to work properly with slidesPerView=1
+  const slidesPerView = 1;
+  const minSlidesForLoop = 4; // Simplified to a fixed number for clarity
+  
+  // Completely disable loop mode to prevent warnings
+  const shouldLoop = false;
+  
   const shouldAutoplay = !coverItem && displayMedia.length > 1;
   
   // Create a unique gallery ID for this project
@@ -424,10 +429,10 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
         ref={swiperRef}
         modules={[Navigation, Autoplay, EffectFade]}
         spaceBetween={0}
-        slidesPerView={1}
+        slidesPerView={slidesPerView}
         navigation={media.length > 1}
-        loop={shouldLoop}
-        loopAdditionalSlides={2}
+        watchOverflow={true}
+        preventInteractionOnTransition={true}
         effect="fade"
         fadeEffect={{ 
           crossFade: true,
@@ -447,7 +452,6 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
         resizeObserver={true}
         speed={500}
         watchSlidesProgress={true}
-        preventInteractionOnTransition={true}
         runCallbacksOnInit={true}
         allowTouchMove={media.length > 1}
         simulateTouch={media.length > 1}
