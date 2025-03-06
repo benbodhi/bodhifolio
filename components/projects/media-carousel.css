@@ -36,6 +36,9 @@
   justify-content: center;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
+  min-height: 0 !important; /* Prevent minimum height */
+  transition: opacity 0.5s ease; /* Smooth opacity transition */
+  position: relative !important; /* Keep all slides in the flow by default */
 }
 
 /* Media Item Link */
@@ -118,7 +121,11 @@
   width: 100% !important;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
-  transition: height 0.3s ease; /* Add smooth transition for height changes */
+  transition: height 0.3s ease !important; /* Add smooth transition for height changes */
+  min-height: 0 !important; /* Prevent minimum height */
+  display: flex !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 .swiper-wrapper {
@@ -126,7 +133,10 @@
   width: 100% !important;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
-  transition: height 0.3s ease; /* Add smooth transition for height changes */
+  transition: height 0.3s ease !important; /* Add smooth transition for height changes */
+  min-height: 0 !important; /* Prevent minimum height */
+  align-items: flex-start !important; /* Align slides to the top */
+  position: relative !important;
 }
 
 .swiper-slide {
@@ -136,6 +146,7 @@
   justify-content: center !important;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
+  min-height: 0 !important; /* Prevent minimum height */
 }
 
 /* Hide pagination dots */
@@ -166,22 +177,42 @@
 
 /* Fade effect customization */
 .swiper-fade .swiper-slide {
-  transition-property: opacity;
+  transition-property: opacity !important;
+  pointer-events: none;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  opacity: 0 !important;
 }
 
 .swiper-fade .swiper-slide-active {
-  z-index: 1;
+  pointer-events: auto;
+  z-index: 2 !important;
+  position: relative !important;
+  opacity: 1 !important;
 }
 
-/* Fix for Swiper auto height */
-.swiper-container-autoheight, 
-.swiper-container-autoheight .swiper-slide {
+/* Remove the rule that hides inactive slides */
+.swiper-slide:not(.swiper-slide-active):not(.swiper-slide-prev):not(.swiper-slide-next) {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+}
+
+/* Ensure active slide and transitioning slides are visible */
+.swiper-slide-active,
+.swiper-slide-prev,
+.swiper-slide-next {
+  opacity: 1 !important;
+  position: relative !important;
   height: auto !important;
-}
-
-.swiper-container-autoheight .swiper-wrapper {
-  align-items: flex-start;
-  transition-property: transform, height !important;
+  visibility: visible !important;
+  z-index: 2 !important;
 }
 
 /* GLightbox customizations */
