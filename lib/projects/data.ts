@@ -38,19 +38,21 @@ export const projects: Project[] = [
       {
         type: `image`,
         src: `/project-media/svg-support.png`
-      },
-      {
-        type: `video`,
-        src: `https://youtube.com/shorts/nViMYrFpIis`
-      },
-      {
-        type: `video`,
-        src: `https://youtu.be/igODARo6hZg`
-      },
-      {
-        type: `video`,
-        src: `https://youtu.be/sSOxPJD-VNo`
       }
+      // Test different video styles and aspect ratios
+      // ,
+      // {
+      //   type: `video`,
+      //   src: `https://youtube.com/shorts/nViMYrFpIis`
+      // },
+      // {
+      //   type: `video`,
+      //   src: `https://youtu.be/igODARo6hZg`
+      // },
+      // {
+      //   type: `video`,
+      //   src: `https://youtu.be/sSOxPJD-VNo`
+      // }
     ],
     links: [
       {
@@ -72,8 +74,7 @@ export const projects: Project[] = [
       },
       {
         type: `image`,
-        src: `/project-media/alps-scene-gondy.jpg`,
-        isCover: true
+        src: `/project-media/alps-scene-gondy.jpg`
       }
     ],
     links: [
@@ -110,9 +111,12 @@ export const projects: Project[] = [
     description: `Co-founder and team member of the onchain media collective Zero Rights Media (formerly known as The Noun Square).<br><br>The Ethereum ecosystem is open source, and it deserves media content that is too.`,
     media: [
       {
+        type: `image`,
+        src: `/project-media/zrm-zoggles.png`
+      },
+      {
         type: `video`,
-        src: `https://vimeo.com/1045807123`,
-        isCover: true
+        src: `https://vimeo.com/1045807123`
       }
     ],
     listItems: [

@@ -222,6 +222,12 @@
   background: #000 !important;
 }
 
+/* Hide navigation for single items */
+.glightbox-container.single-item .gnext,
+.glightbox-container.single-item .gprev {
+  display: none !important;
+}
+
 .gslide-media {
   max-width: 100%;
   background: #000 !important;

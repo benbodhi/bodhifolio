@@ -243,11 +243,15 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
         const GLightboxModule = await import('glightbox');
         const GLightbox = GLightboxModule.default;
         
+        // Determine if we should loop in the lightbox
+        // Only loop if there are multiple media items
+        const shouldLoopLightbox = displayMedia.length > 1;
+        
         // Initialize GLightbox with options to respect natural aspect ratios
         lightboxRef.current = GLightbox({
           selector: `.glightbox-${projectId}`, // Use project-specific selector
-          touchNavigation: true,
-          loop: shouldLoop,
+          touchNavigation: shouldLoopLightbox, // Only enable touch navigation if multiple items
+          loop: shouldLoopLightbox, // Only loop if multiple items
           autoplayVideos: true,
           videosWidth: 'auto', // Changed from fixed width to auto
           descPosition: 'none', // Don't show descriptions to avoid white bar
@@ -261,7 +265,16 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
               youtube: { noCookie: true, rel: 0, showinfo: 0 },
               vimeo: { byline: false, portrait: false, title: false }
             }
-          } as any
+          } as any,
+          // Only show navigation controls if there are multiple items
+          slideEffect: 'fade',
+          closeButton: true,
+          zoomable: false,
+          draggable: shouldLoopLightbox,
+          dragToleranceX: 40,
+          dragToleranceY: 40,
+          showNavigation: shouldLoopLightbox,
+          navigationButtons: shouldLoopLightbox
         } as any); // Use type assertion for the entire options object
         
         // Add event listeners after initialization
@@ -280,6 +293,18 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
             setTimeout(() => {
               if (lightboxRef.current) {
                 lightboxRef.current.resize();
+                
+                // If there's only one item, make sure navigation is disabled
+                if (displayMedia.length === 1) {
+                  const nextButton = document.querySelector('.gnext');
+                  const prevButton = document.querySelector('.gprev');
+                  if (nextButton) nextButton.setAttribute('style', 'display: none !important');
+                  if (prevButton) prevButton.setAttribute('style', 'display: none !important');
+                  
+                  // Add a class to the lightbox container for single items
+                  const container = document.querySelector('.glightbox-container');
+                  if (container) container.classList.add('single-item');
+                }
               }
             }, 100);
           });
@@ -307,7 +332,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
         lightboxRef.current.destroy();
       }
     };
-  }, [shouldLoop, projectId]);
+  }, [shouldLoop, projectId, displayMedia.length]);
   
   // Effect to update height when active index changes
   useEffect(() => {
@@ -438,11 +463,12 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
                 <a 
                   href={item.src} 
                   className={`glightbox-${projectId} media-item`}
-                  data-gallery={galleryId}
+                  data-gallery={displayMedia.length > 1 ? galleryId : null}
                   data-type="image"
                   data-description={title}
                   data-width="auto"
                   data-height="auto"
+                  data-zoomable={false}
                 >
                   <div className="media-carousel-image-container">
                     <img
@@ -468,11 +494,12 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
                 <a
                   href={getVideoEmbedUrl(item)}
                   className={`glightbox-${projectId} media-item`}
-                  data-gallery={galleryId}
+                  data-gallery={displayMedia.length > 1 ? galleryId : null}
                   data-type="video"
                   data-description={title}
                   data-width="auto"
                   data-height="auto"
+                  data-zoomable={false}
                 >
                   <div className="media-carousel-video-container">
                     <img
