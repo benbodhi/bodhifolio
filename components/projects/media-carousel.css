@@ -49,7 +49,7 @@
 /* Make the active slide visible */
 .embla__slide.is-selected {
   opacity: 1;
-  z-index: 2; /* Higher z-index for the selected slide */
+  z-index: 2;
   position: relative; /* Keep the selected slide in the flow */
   pointer-events: auto; /* Enable pointer events on visible slide */
 }

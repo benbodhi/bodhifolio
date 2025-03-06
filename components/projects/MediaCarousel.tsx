@@ -213,7 +213,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
       }
     };
   }, [emblaApi, autoplay, displayMedia.length]);
-  
+
   // Initialize GLightbox when component mounts
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -299,17 +299,17 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
     // Apply 'is-selected' class to the active slide for crossfade effect
     const slides = emblaApi.slideNodes();
     
-    // Add the class to the selected slide first, then remove from others
-    // This prevents any black flash during transition
+    // First remove the class from all slides
+    slides.forEach(slide => {
+      slide.classList.remove('is-selected');
+    });
+    
+    // Then add it to the selected slide with a small delay for smoother transition
     if (slides[selectedIndex]) {
-      slides[selectedIndex].classList.add('is-selected');
-      
-      // Then remove from other slides
-      slides.forEach((slide, index) => {
-        if (index !== selectedIndex) {
-          slide.classList.remove('is-selected');
-        }
-      });
+      // Use setTimeout to ensure the removal is processed first
+      setTimeout(() => {
+        slides[selectedIndex].classList.add('is-selected');
+      }, 10);
     }
     
     // Update container height based on current slide
