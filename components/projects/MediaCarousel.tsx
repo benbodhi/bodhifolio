@@ -1,5 +1,5 @@
 import { MediaItem } from "@/lib/projects/types"
-import { memo, useCallback, useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useState, useRef } from "react"
 import MediaRenderer from "./MediaRenderer"
 
 interface MediaCarouselProps {
@@ -48,25 +48,61 @@ export const MediaCarousel = memo(({
     );
   }
   
-  // For multiple media items without a cover, implement carousel functionality
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // For multiple media items without a cover, implement simple carousel
+  const [activeIndex, setActiveIndex] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Clear interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
   
   // Set up the rotation interval
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % media.length);
+    // Clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    // Set new interval
+    intervalRef.current = setInterval(() => {
+      setActiveIndex((prevIndex) => (prevIndex + 1) % media.length);
     }, 5000);
     
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [media.length]);
   
   return (
-    <div className="w-full mb-8">
-      <MediaRenderer 
-        item={media[currentIndex]} 
-        title={title} 
-        onClick={() => onMediaClick(currentIndex)} 
-      />
+    <div className="w-full mb-8 relative">
+      {media.map((item, index) => (
+        <div 
+          key={`${item.type}-${item.src}-${index}`}
+          className="transition-opacity duration-1000"
+          style={{ 
+            opacity: index === activeIndex ? 1 : 0,
+            zIndex: index === activeIndex ? 2 : 1,
+            position: index === activeIndex ? 'relative' : 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            display: index === activeIndex || index === (activeIndex - 1 + media.length) % media.length ? 'block' : 'none'
+          }}
+        >
+          <MediaRenderer 
+            item={item} 
+            title={title} 
+            onClick={() => onMediaClick(index)} 
+          />
+        </div>
+      ))}
     </div>
   );
 });

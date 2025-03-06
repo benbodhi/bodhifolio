@@ -365,10 +365,10 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
     } else {
       // For videos, we need to format them for the lightbox video plugin
       let videoId = '';
-      let videoType = 'video/mp4'; // Default video type
       
-      // Extract YouTube video ID
+      // Handle YouTube videos
       if (item.src.includes('youtube.com') || item.src.includes('youtu.be')) {
+        // Extract video ID
         if (item.src.includes('youtube.com/watch')) {
           const urlParams = new URL(item.src).searchParams;
           videoId = urlParams.get('v') || '';
@@ -376,6 +376,8 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
           videoId = item.src.split('youtu.be/')[1]?.split('?')[0] || '';
         } else if (item.src.includes('youtube.com/embed/')) {
           videoId = item.src.split('youtube.com/embed/')[1]?.split('?')[0] || '';
+        } else if (item.src.includes('youtube.com/shorts/')) {
+          videoId = item.src.split('youtube.com/shorts/')[1]?.split('?')[0] || '';
         }
         
         if (videoId) {
@@ -386,7 +388,7 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
             poster: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
             sources: [
               {
-                src: `https://www.youtube.com/embed/${videoId}`,
+                src: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`,
                 type: 'video/mp4'
               }
             ]
@@ -394,7 +396,7 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         }
       }
       
-      // Extract Vimeo video ID
+      // Handle Vimeo videos
       if (item.src.includes('vimeo.com')) {
         const vimeoId = item.src.split('vimeo.com/')[1]?.split('?')[0] || '';
         if (vimeoId) {
@@ -402,10 +404,10 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
             type: 'video' as const,
             width: 1280,
             height: 720,
-            poster: '',
+            poster: '', // Empty poster for Vimeo
             sources: [
               {
-                src: `https://player.vimeo.com/video/${vimeoId}`,
+                src: `https://player.vimeo.com/video/${vimeoId}?autoplay=1`,
                 type: 'video/mp4'
               }
             ]
@@ -418,11 +420,11 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         type: 'video' as const,
         width: 1280,
         height: 720,
-        poster: '',
+        poster: '', // Empty poster for other videos
         sources: [
           {
             src: item.src,
-            type: videoType
+            type: 'video/mp4'
           }
         ]
       };
@@ -454,29 +456,51 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         <Lightbox
           open={lightboxOpen}
           close={() => setLightboxOpen(false)}
-          slides={lightboxSlides as any}
+          slides={lightboxSlides}
           index={lightboxIndex}
           plugins={[Video]}
           carousel={{ 
             finite: false,
-            preload: 1
+            preload: 1,
+            padding: 0,
+            spacing: 0,
+            imageFit: "contain"
           }}
           controller={{ 
-            closeOnBackdropClick: true 
+            closeOnBackdropClick: true,
+            touchAction: "pan-y"
           }}
           render={{
             buttonPrev: unifiedMedia.length > 1 ? undefined : () => null,
-            buttonNext: unifiedMedia.length > 1 ? undefined : () => null
+            buttonNext: unifiedMedia.length > 1 ? undefined : () => null,
+            iconNext: () => (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                <path fillRule="evenodd" d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z" clipRule="evenodd" />
+              </svg>
+            ),
+            iconPrev: () => (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06l7.5-7.5a.75.75 0 111.06 1.06L9.31 12l6.97 6.97a.75.75 0 11-1.06 1.06l-7.5-7.5z" clipRule="evenodd" />
+              </svg>
+            )
           }}
           styles={{
             container: { backgroundColor: "rgba(0, 0, 0, 0.9)" },
             slide: { width: "100%", height: "100%" }
           }}
           video={{
-            autoPlay: false,
+            autoPlay: true,
             controls: true,
             playsInline: true,
-            controlsList: "nodownload"
+            controlsList: "nodownload",
+            loop: false
+          }}
+          animation={{ fade: 300 }}
+          on={{
+            view: ({ index }) => {
+              // Update the current index
+              setLightboxIndex(index);
+            }
           }}
         />
         

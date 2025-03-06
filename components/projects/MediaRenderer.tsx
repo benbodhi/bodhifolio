@@ -16,10 +16,12 @@ const formatVideoUrl = (url: string): string => {
       videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
     } else if (url.includes('youtube.com/embed/')) {
       videoId = url.split('youtube.com/embed/')[1]?.split('?')[0] || '';
+    } else if (url.includes('youtube.com/shorts/')) {
+      videoId = url.split('youtube.com/shorts/')[1]?.split('?')[0] || '';
     }
     
     if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
+      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1`;
     }
   }
   
@@ -131,7 +133,10 @@ const VideoRenderer = memo(({
         </div>
       ) : shouldRender ? (
         // Actual iframe when ready to render with control buttons
-        <div className="w-full h-0 relative" style={{ paddingBottom: 'calc(100% / (16/9))', aspectRatio }}>
+        <div className="w-full relative" style={{ 
+          paddingBottom: isYouTube ? 'calc(100% * 9/16)' : isVimeo ? 'calc(100% * 9/16)' : 'calc(100% * 9/16)', 
+          minHeight: '200px'
+        }}>
           <iframe
             ref={iframeRef}
             src={formattedUrl.current}
@@ -233,29 +238,25 @@ const ImageRenderer = memo(({
     };
   }, [src]);
   
-  // Calculate aspect ratio for the container
-  const aspectRatio = naturalWidth && naturalHeight 
-    ? `${naturalWidth} / ${naturalHeight}` 
-    : '16 / 9'; // Default aspect ratio
-  
   return (
     <div 
       className="relative w-full rounded-lg overflow-hidden cursor-pointer"
       style={{ 
-        aspectRatio,
         minHeight: isLoaded ? 'auto' : '200px' // Minimum height before image loads
       }}
       onClick={onClick}
     >
       {isLoaded ? (
-        <Image 
-          src={src}
-          alt={title || "Project image"}
-          fill 
-          priority
-          className="object-contain"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+        <div style={{ paddingBottom: `${(naturalHeight / naturalWidth) * 100}%` }} className="relative w-full">
+          <Image 
+            src={src}
+            alt={title || "Project image"}
+            fill 
+            priority
+            className="object-contain"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-[hsl(var(--border))]">
           <div className="animate-pulse">Loading...</div>
@@ -277,6 +278,11 @@ export const MediaRenderer = memo(({
   title: string;
   onClick?: () => void;
 }) => {
+  // Handle case where item is undefined
+  if (!item) {
+    return <div className="w-full h-64 bg-[hsl(var(--border))] rounded-lg"></div>;
+  }
+  
   return (
     <div className="w-full">
       {item.type === 'video' ? (
