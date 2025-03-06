@@ -80,7 +80,9 @@ const getVideoThumbnail = (item: MediaItem): string => {
   // If videoType is explicitly set, use it
   if (videoType) {
     if (videoType === 'youtube') {
-      return `https://img.youtube.com/vi/${extractYouTubeID(src)}/hqdefault.jpg`;
+      // Use maxresdefault for higher quality, fallback to hqdefault
+      const videoId = extractYouTubeID(src);
+      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     }
     if (videoType === 'vimeo') {
       return `https://vumbnail.com/${extractVimeoID(src)}.jpg`;
@@ -90,7 +92,9 @@ const getVideoThumbnail = (item: MediaItem): string => {
   
   // Otherwise, try to detect from URL
   if (src.includes("youtube.com") || src.includes("youtu.be")) {
-    return `https://img.youtube.com/vi/${extractYouTubeID(src)}/hqdefault.jpg`;
+    // Use maxresdefault for higher quality, fallback to hqdefault
+    const videoId = extractYouTubeID(src);
+    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
   if (src.includes("vimeo.com")) {
     return `https://vumbnail.com/${extractVimeoID(src)}.jpg`;
@@ -117,6 +121,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   const [lightboxInitialized, setLightboxInitialized] = useState(false);
   const swiperRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [swiperHeight, setSwiperHeight] = useState<string>("auto");
   
   // For empty media array, return nothing
   if (!media || media.length === 0) {
@@ -209,6 +214,21 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   // Handle slide change
   const handleSlideChange = (swiper: any) => {
     setActiveIndex(swiper.activeIndex);
+    
+    // Update swiper height after slide change to match current slide content
+    if (swiper && swiper.slides && swiper.slides[swiper.activeIndex]) {
+      const currentSlide = swiper.slides[swiper.activeIndex];
+      const slideContent = currentSlide.querySelector('.media-carousel-image');
+      
+      if (slideContent) {
+        // Force a reflow to ensure the image has loaded and has proper dimensions
+        setTimeout(() => {
+          if (swiper && swiper.updateAutoHeight) {
+            swiper.updateAutoHeight(0);
+          }
+        }, 50);
+      }
+    }
   };
   
   return (
@@ -230,6 +250,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
         onSlideChange={handleSlideChange}
         observer={true}
         observeParents={true}
+        autoHeight={true}
       >
         {displayMedia.map((item, index) => {
           const thumbnailSrc = item.type === "video" ? getVideoThumbnail(item) : item.src;
@@ -252,6 +273,12 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
                       alt={`${title} - Image ${index + 1}`}
                       className="media-carousel-image"
                       loading="lazy"
+                      onLoad={() => {
+                        // Update swiper height after image loads
+                        if (swiperRef.current && swiperRef.current.swiper) {
+                          swiperRef.current.swiper.updateAutoHeight(0);
+                        }
+                      }}
                     />
                   </div>
                 </a>
@@ -271,6 +298,21 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
                       alt={`${title} - Video ${index + 1}`}
                       className="media-carousel-image"
                       loading="lazy"
+                      onLoad={() => {
+                        // Update swiper height after thumbnail loads
+                        if (swiperRef.current && swiperRef.current.swiper) {
+                          swiperRef.current.swiper.updateAutoHeight(0);
+                        }
+                      }}
+                      onError={(e) => {
+                        // If maxresdefault fails, fallback to hqdefault
+                        if (item.type === "video" && 
+                            (item.videoType === 'youtube' || 
+                             (!item.videoType && (item.src.includes("youtube.com") || item.src.includes("youtu.be"))))) {
+                          const videoId = extractYouTubeID(item.src);
+                          (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                        }
+                      }}
                     />
                     <div className="media-carousel-play-button hover-only">
                       <div className="media-carousel-play-icon">

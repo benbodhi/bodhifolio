@@ -33,6 +33,7 @@
   align-items: center;
   justify-content: center;
   background-color: transparent;
+  height: auto !important; /* Allow height to adjust based on content */
 }
 
 /* Media Item Link */
@@ -69,7 +70,7 @@
   display: block;
   width: 100%;
   height: auto;
-  object-fit: contain;
+  object-fit: cover; /* Changed from contain to cover */
   background-color: transparent;
 }
 
@@ -114,12 +115,14 @@
   max-width: 100% !important;
   width: 100% !important;
   background-color: transparent;
+  height: auto !important; /* Allow height to adjust based on content */
 }
 
 .swiper-wrapper {
   max-width: 100% !important;
   width: 100% !important;
   background-color: transparent;
+  height: auto !important; /* Allow height to adjust based on content */
 }
 
 .swiper-slide {
@@ -128,6 +131,7 @@
   display: flex !important;
   justify-content: center !important;
   background-color: transparent;
+  height: auto !important; /* Allow height to adjust based on content */
 }
 
 /* Hide pagination dots */
