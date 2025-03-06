@@ -42,12 +42,14 @@
   opacity: 0;
   transition: opacity 0.8s ease-in-out;
   pointer-events: none; /* Disable pointer events on hidden slides */
+  z-index: 1; /* Ensure all slides have a z-index */
+  visibility: visible; /* Keep all slides visible to prevent black flash */
 }
 
 /* Make the active slide visible */
 .embla__slide.is-selected {
   opacity: 1;
-  z-index: 2;
+  z-index: 2; /* Higher z-index for the selected slide */
   position: relative; /* Keep the selected slide in the flow */
   pointer-events: auto; /* Enable pointer events on visible slide */
 }

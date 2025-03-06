@@ -125,6 +125,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const lightboxRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   
   // For empty media array, return nothing
   if (!media || media.length === 0) {
@@ -139,6 +140,79 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   
   // Create a unique gallery ID for this project
   const galleryId = `project-gallery-${projectId}`;
+  
+  // Autoplay functionality
+  const autoplay = useCallback(() => {
+    if (!emblaApi || displayMedia.length <= 1) return;
+    
+    // Clear any existing timeout
+    if (autoplayRef.current) {
+      clearTimeout(autoplayRef.current);
+    }
+    
+    // Set a new timeout to advance to the next slide after 5 seconds
+    autoplayRef.current = setTimeout(() => {
+      if (emblaApi) {
+        try {
+          emblaApi.scrollNext();
+        } catch (error) {
+          // Embla API might be destroyed
+          console.error("Error in autoplay:", error);
+        }
+      }
+    }, 5000); // 5 seconds
+  }, [emblaApi, displayMedia.length]);
+  
+  // Start autoplay when component mounts and when slide changes
+  useEffect(() => {
+    if (!emblaApi || displayMedia.length <= 1) return;
+    
+    // Start autoplay
+    autoplay();
+    
+    // Add event listener to restart autoplay after slide changes
+    emblaApi.on('select', autoplay);
+    
+    // Pause autoplay on hover
+    const pauseAutoplay = () => {
+      if (autoplayRef.current) {
+        clearTimeout(autoplayRef.current);
+      }
+    };
+    
+    // Resume autoplay when mouse leaves
+    const resumeAutoplay = () => {
+      autoplay();
+    };
+    
+    // Get the container element
+    const container = emblaApi.rootNode();
+    if (container) {
+      container.addEventListener('mouseenter', pauseAutoplay);
+      container.addEventListener('mouseleave', resumeAutoplay);
+    }
+    
+    // Clean up
+    return () => {
+      if (autoplayRef.current) {
+        clearTimeout(autoplayRef.current);
+      }
+      
+      if (emblaApi) {
+        try {
+          emblaApi.off('select', autoplay);
+        } catch (error) {
+          // Embla API might be destroyed
+          console.error("Error removing event listener:", error);
+        }
+      }
+      
+      if (container) {
+        container.removeEventListener('mouseenter', pauseAutoplay);
+        container.removeEventListener('mouseleave', resumeAutoplay);
+      }
+    };
+  }, [emblaApi, autoplay, displayMedia.length]);
   
   // Initialize GLightbox when component mounts
   useEffect(() => {
@@ -225,17 +299,17 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
     // Apply 'is-selected' class to the active slide for crossfade effect
     const slides = emblaApi.slideNodes();
     
-    // First remove the class from all slides
-    slides.forEach(slide => {
-      slide.classList.remove('is-selected');
-    });
-    
-    // Then add it to the selected slide with a small delay for smoother transition
+    // Add the class to the selected slide first, then remove from others
+    // This prevents any black flash during transition
     if (slides[selectedIndex]) {
-      // Use setTimeout to ensure the removal is processed first
-      setTimeout(() => {
-        slides[selectedIndex].classList.add('is-selected');
-      }, 10);
+      slides[selectedIndex].classList.add('is-selected');
+      
+      // Then remove from other slides
+      slides.forEach((slide, index) => {
+        if (index !== selectedIndex) {
+          slide.classList.remove('is-selected');
+        }
+      });
     }
     
     // Update container height based on current slide
