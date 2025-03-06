@@ -1,26 +1,16 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, EffectFade } from "swiper/modules";
+import React, { useEffect, useCallback, useState, useRef } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import type { MediaItem } from "@/lib/projects/types";
-// Remove direct import of GLightbox
-// import GLightbox from "glightbox";
-
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/effect-fade";
+import "./media-carousel.css";
 // Import GLightbox styles
 import "glightbox/dist/css/glightbox.css";
-
-// Add custom styles to override Swiper's default behavior
-import "./media-carousel.css";
 
 interface MediaCarouselProps {
   media: MediaItem[];
   title: string;
-  projectId: string; // Add projectId to isolate galleries
+  projectId: string;
 }
 
 /**
@@ -80,7 +70,6 @@ const getVideoThumbnail = (item: MediaItem): string => {
   // If videoType is explicitly set, use it
   if (videoType) {
     if (videoType === 'youtube') {
-      // Use maxresdefault for higher quality, fallback to hqdefault
       const videoId = extractYouTubeID(src);
       return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     }
@@ -92,7 +81,6 @@ const getVideoThumbnail = (item: MediaItem): string => {
   
   // Otherwise, try to detect from URL
   if (src.includes("youtube.com") || src.includes("youtu.be")) {
-    // Use maxresdefault for higher quality, fallback to hqdefault
     const videoId = extractYouTubeID(src);
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
@@ -102,36 +90,15 @@ const getVideoThumbnail = (item: MediaItem): string => {
   return "/images/video-placeholder.jpg"; // Fallback for local videos
 };
 
-/**
- * Determines if a URL is a video URL
- */
-const isVideoUrl = (url: string): boolean => {
-  return (
-    url.includes("youtube.com") || 
-    url.includes("youtu.be") || 
-    url.includes("vimeo.com") || 
-    url.endsWith(".mp4") || 
-    url.endsWith(".webm") || 
-    url.endsWith(".ogg")
-  );
-};
-
 // Simple MediaItem component to display an image or video thumbnail
 const MediaItemComponent = ({ item }: { item: MediaItem }) => {
   return (
-    <div className="w-full h-full">
+    <div className="media-item-wrapper">
       <img 
         src={item.type === "video" ? getVideoThumbnail(item) : item.src} 
         alt="" 
-        className="w-full h-full object-cover media-carousel-image"
+        className="media-carousel-image"
         loading="lazy"
-        onLoad={(e) => {
-          // Force a resize event after image loads to ensure proper height
-          if (typeof window !== 'undefined') {
-            const resizeEvent = new Event('resize');
-            window.dispatchEvent(resizeEvent);
-          }
-        }}
       />
       {item.type === "video" && (
         <div className="video-play-overlay">
@@ -147,13 +114,17 @@ const MediaItemComponent = ({ item }: { item: MediaItem }) => {
 };
 
 const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
+  // Configure Embla for pure crossfade with no sliding
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: media.length > 1,
+    align: "center",
+    axis: "y", // Use vertical axis to prevent horizontal sliding
+    skipSnaps: true, // Allow skipping to any slide
+    dragFree: true, // Prevent dragging behavior
+  });
+  const [currentIndex, setCurrentIndex] = useState(0);
   const lightboxRef = useRef<any>(null);
-  const [lightboxInitialized, setLightboxInitialized] = useState(false);
-  const swiperRef = useRef<any>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [swiperInstance, setSwiperInstance] = useState<any>(null);
-  const [forceUpdate, setForceUpdate] = useState(0); // Add state to force re-renders
-  const randomizedMediaRef = useRef<MediaItem[] | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // For empty media array, return nothing
   if (!media || media.length === 0) {
@@ -163,127 +134,29 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   // Check if there's a cover image that should be displayed exclusively
   const coverItem = media.find(item => item.isCover);
   
-  // Use useEffect to randomize media items only once when the component mounts
-  // or when the media array changes
-  useEffect(() => {
-    if (media.length > 5) {
-      // Create a copy of the media array without the cover item
-      const mediaWithoutCover = coverItem 
-        ? media.filter(item => !item.isCover) 
-        : [...media];
-      
-      // Shuffle the non-cover items
-      const shuffledMedia = [...mediaWithoutCover].sort(() => Math.random() - 0.5);
-      
-      // If there's a cover item, put it first
-      randomizedMediaRef.current = coverItem ? [coverItem, ...shuffledMedia] : shuffledMedia;
-    } else {
-      // For 5 or fewer items, just use the original order or show only the cover
-      randomizedMediaRef.current = null;
-    }
-  }, [media, coverItem]);
-  
   // Determine the media items to display
-  const displayMedia = randomizedMediaRef.current || (coverItem ? [coverItem] : media);
-
-  // Determine if we should use loop mode
-  const shouldLoop = displayMedia.length >= 3; // Enable loop mode only when there are at least 3 items
-  const slidesPerView = 1;
-  const minSlidesForLoop = 3; // Minimum slides needed for loop mode
-  
-  const shouldAutoplay = !coverItem && displayMedia.length > 1;
+  const displayMedia = coverItem ? [coverItem] : media;
   
   // Create a unique gallery ID for this project
   const galleryId = `project-gallery-${projectId}`;
   
-  // Safely update the swiper height
-  const updateSwiperHeight = () => {
-    if (typeof window === 'undefined' || !swiperInstance || swiperInstance.destroyed) return;
-    
-    try {
-      // Use requestAnimationFrame to ensure DOM has updated
-      requestAnimationFrame(() => {
-        // Check if swiper is still valid before updating
-        if (swiperInstance && !swiperInstance.destroyed) {
-          if (typeof swiperInstance.updateAutoHeight === 'function') {
-            swiperInstance.updateAutoHeight();
-          }
-          
-          // Force a re-render after a short delay to ensure height is updated
-          setTimeout(() => {
-            setForceUpdate(prev => prev + 1);
-          }, 50);
-        }
-      });
-    } catch (error) {
-      console.error("Error updating swiper height:", error);
-    }
-  };
-  
-  // Force resize the swiper container to match the current slide
-  const forceResizeSwiper = () => {
-    if (typeof window === 'undefined' || !swiperInstance || swiperInstance.destroyed) return;
-    
-    try {
-      // Safely check if slides and activeIndex exist
-      if (!swiperInstance.slides || typeof swiperInstance.activeIndex !== 'number') return;
-      
-      // Get the correct slide index (handle loop mode)
-      let slideIndex = swiperInstance.activeIndex;
-      if (swiperInstance.params.loop && typeof swiperInstance.realIndex === 'number') {
-        slideIndex = swiperInstance.realIndex;
-      }
-      
-      const activeSlide = swiperInstance.slides[slideIndex];
-      if (!activeSlide) return;
-      
-      const slideContent = activeSlide.querySelector('img');
-      if (!slideContent) return;
-      
-      // Get the natural dimensions of the image
-      const imgWidth = slideContent.naturalWidth || slideContent.offsetWidth;
-      const imgHeight = slideContent.naturalHeight || slideContent.offsetHeight;
-      
-      if (imgWidth && imgHeight) {
-        // Calculate aspect ratio
-        const aspectRatio = imgHeight / imgWidth;
-        
-        // Get the container width
-        const containerWidth = swiperInstance.width;
-        
-        // Calculate the height based on aspect ratio and container width
-        const calculatedHeight = containerWidth * aspectRatio;
-        
-        // Apply the height to the swiper container with a transition matching the slide transition
-        if (swiperInstance.el) {
-          // Apply the transition directly to the element
-          swiperInstance.el.style.transition = `height 2s ease`;
-          swiperInstance.el.style.height = `${calculatedHeight}px`;
-          
-          // Also apply to the wrapper
-          const wrapper = swiperInstance.el.querySelector('.swiper-wrapper');
-          if (wrapper) {
-            wrapper.style.transition = `height 2s ease`;
-            wrapper.style.height = `${calculatedHeight}px`;
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error forcing resize:", error);
-    }
-  };
-  
   // Initialize GLightbox when component mounts
   useEffect(() => {
-    // Dynamically import GLightbox only on the client side
-    const initLightbox = async () => {
+    if (typeof window === 'undefined') return;
+    
+    const loadGLightbox = async () => {
       try {
         // Dynamic import of GLightbox
         const GLightboxModule = await import('glightbox');
         const GLightbox = GLightboxModule.default;
         
-        // Determine if we should loop in the lightbox
-        // Only loop if there are multiple media items
+        // Make sure the elements exist before initializing
+        const elements = document.querySelectorAll(`.glightbox-${projectId}`);
+        if (elements.length === 0) {
+          console.warn(`No elements found with class .glightbox-${projectId}`);
+          return;
+        }
+        
         const shouldLoopLightbox = displayMedia.length > 1;
         
         // Initialize GLightbox
@@ -293,193 +166,264 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
           loop: shouldLoopLightbox,
           autoplayVideos: true,
           plyr: {
-            ratio: undefined,
             config: {
+              ratio: '16:9', // Default aspect ratio
               fullscreen: { enabled: true, iosNative: true },
               youtube: { noCookie: true, rel: 0, showinfo: 0 },
               vimeo: { byline: false, portrait: false, title: false }
             }
           },
-          slideEffect: 'fade',
           closeButton: true,
-          zoomable: false,
-          draggable: shouldLoopLightbox,
-          dragToleranceX: 40,
-          dragToleranceY: 40,
-          // Add custom CSS classes for styling
-          cssEfects: {
-            fade: { in: 'fadeIn', out: 'fadeOut' }
-          },
-          // Use SVG icons that match our carousel
           svg: {
-            play: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M8 5v14l11-7z"/></svg>'
+            close: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+            next: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
+            prev: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>'
           }
         } as any);
         
         lightboxRef.current = lightbox;
-        setLightboxInitialized(true);
         
-        // Add event listeners after initialization
-        lightbox.on('open', () => {
-          // If there's only one item, make sure navigation is disabled
-          if (displayMedia.length === 1) {
+        // Hide navigation for single items
+        if (displayMedia.length === 1) {
+          lightbox.on('open', () => {
             setTimeout(() => {
-              const nextButton = document.querySelector('.gnext');
-              const prevButton = document.querySelector('.gprev');
-              if (nextButton) nextButton.setAttribute('style', 'display: none !important');
-              if (prevButton) prevButton.setAttribute('style', 'display: none !important');
-              
-              // Add a class to the lightbox container for single items
-              const container = document.querySelector('.glightbox-container');
-              if (container) container.classList.add('single-item');
+              document.querySelectorAll('.glightbox-container .gnext, .glightbox-container .gprev')
+                .forEach(el => (el as HTMLElement).style.display = 'none');
             }, 100);
-          }
-        });
+          });
+        }
+        
+        console.log("GLightbox initialized successfully");
       } catch (error) {
         console.error("Failed to initialize GLightbox:", error);
       }
     };
     
-    // Only run in browser environment
-    if (typeof window !== 'undefined') {
-      initLightbox();
-    }
+    // Delay initialization to ensure DOM is ready
+    setTimeout(loadGLightbox, 500);
     
-    // Clean up on unmount
     return () => {
       if (lightboxRef.current) {
-        lightboxRef.current.destroy();
+        try {
+          lightboxRef.current.destroy();
+          lightboxRef.current = null;
+        } catch (error) {
+          console.error("Error destroying lightbox:", error);
+        }
       }
     };
   }, [projectId, displayMedia.length]);
   
-  // Effect to update height when active index changes
-  useEffect(() => {
-    if (typeof window !== 'undefined' && activeIndex >= 0) {
-      updateSwiperHeight();
-      forceResizeSwiper();
-    }
-  }, [activeIndex, forceUpdate]);
-  
-  // Effect to handle window resize
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  // Handle index updates when swiping
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
     
-    const handleResize = () => {
-      updateSwiperHeight();
-      forceResizeSwiper();
-    };
+    // Get the current index
+    const selectedIndex = emblaApi.selectedScrollSnap();
+    setCurrentIndex(selectedIndex);
     
-    window.addEventListener('resize', handleResize);
+    // Apply 'is-selected' class to the active slide for crossfade effect
+    const slides = emblaApi.slideNodes();
     
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [swiperInstance]);
-  
-  // Effect to cleanup Swiper instance on unmount
-  useEffect(() => {
-    return () => {
-      if (swiperInstance && !swiperInstance.destroyed) {
-        swiperInstance.destroy(true, true);
-      }
-    };
-  }, [swiperInstance]);
-  
-  const handleSwiperInit = (swiper: any) => {
-    setSwiperInstance(swiper);
+    // First remove the class from all slides
+    slides.forEach(slide => {
+      slide.classList.remove('is-selected');
+    });
     
-    // Initial height update after a short delay to ensure images are loaded
-    if (typeof window !== 'undefined') {
+    // Then add it to the selected slide with a small delay for smoother transition
+    if (slides[selectedIndex]) {
+      // Use setTimeout to ensure the removal is processed first
       setTimeout(() => {
-        updateSwiperHeight();
-        forceResizeSwiper();
-      }, 100);
+        slides[selectedIndex].classList.add('is-selected');
+      }, 10);
     }
-  };
-
-  const handleSlideChange = (swiper: any) => {
-    if (swiper && typeof swiper.activeIndex === 'number') {
-      // For loop mode, we need to adjust the activeIndex
-      let realIndex = swiper.activeIndex;
-      if (swiper.params.loop) {
-        realIndex = swiper.realIndex || swiper.activeIndex;
-      }
-      
-      setActiveIndex(realIndex);
-      
-      // Trigger height adjustment immediately when slide changes
-      // This ensures the height transition starts at the same time as the slide transition
-      if (typeof window !== 'undefined') {
-        forceResizeSwiper();
+    
+    // Update container height based on current slide
+    if (containerRef.current) {
+      const slideNode = slides[selectedIndex];
+      if (slideNode) {
+        const img = slideNode.querySelector('img');
+        if (img && img.complete && containerRef.current) {
+          const height = img.offsetHeight;
+          if (height > 0) {
+            containerRef.current.style.height = `${height}px`;
+          }
+        }
       }
     }
-  };
+  }, [emblaApi]);
   
-  const handleTransitionEnd = () => {
-    // Update height after transition completes
-    if (typeof window !== 'undefined') {
-      // Use a slight delay to ensure the transition has completed
-      setTimeout(() => {
-        updateSwiperHeight();
-        forceResizeSwiper();
-      }, 50);
+  useEffect(() => {
+    if (emblaApi) {
+      emblaApi.on("select", onSelect);
+      
+      // Initial setup for crossfade
+      emblaApi.on("init", () => {
+        // Apply 'is-selected' class to the initial slide
+        const slides = emblaApi.slideNodes();
+        const selectedIndex = emblaApi.selectedScrollSnap();
+        
+        slides.forEach((slide, index) => {
+          if (index === selectedIndex) {
+            slide.classList.add('is-selected');
+          } else {
+            slide.classList.remove('is-selected');
+          }
+        });
+        
+        setTimeout(onSelect, 100);
+      });
+      
+      // Update height when images load
+      const slides = emblaApi.slideNodes();
+      slides.forEach(slide => {
+        const img = slide.querySelector('img');
+        if (img) {
+          img.onload = onSelect;
+        }
+      });
+      
+      // Also update on window resize
+      window.addEventListener('resize', onSelect);
+      
+      return () => {
+        emblaApi.off("select", onSelect);
+        window.removeEventListener('resize', onSelect);
+      };
     }
-  };
+  }, [emblaApi, onSelect]);
+  
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+  
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
   
   const openLightbox = (index: number) => {
-    // Only attempt to open lightbox if we're in a browser and the lightbox is initialized
-    if (typeof window !== 'undefined' && lightboxRef.current) {
-      lightboxRef.current.openAt(index);
+    if (typeof window === 'undefined') return;
+    
+    try {
+      if (lightboxRef.current) {
+        lightboxRef.current.openAt(index);
+      } else {
+        console.warn("Lightbox not initialized yet");
+        // Try to initialize it again
+        const loadGLightbox = async () => {
+          const GLightboxModule = await import('glightbox');
+          const GLightbox = GLightboxModule.default;
+          
+          const lightbox = GLightbox({
+            selector: `.glightbox-${projectId}`,
+            touchNavigation: displayMedia.length > 1,
+            loop: displayMedia.length > 1,
+            autoplayVideos: true
+          } as any);
+          
+          lightboxRef.current = lightbox;
+          setTimeout(() => {
+            if (lightboxRef.current) {
+              lightboxRef.current.openAt(index);
+            }
+          }, 100);
+        };
+        
+        loadGLightbox();
+      }
+    } catch (error) {
+      console.error("Error opening lightbox:", error);
     }
   };
-
+  
+  // Initialize the carousel with the first slide visible
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    // Apply 'is-selected' class to the initial slide immediately
+    const slides = emblaApi.slideNodes();
+    if (slides.length > 0) {
+      slides[0].classList.add('is-selected');
+    }
+    
+    // Update height for the first slide
+    if (containerRef.current && slides.length > 0) {
+      const firstSlide = slides[0];
+      const img = firstSlide.querySelector('img');
+      if (img) {
+        if (img.complete) {
+          const height = img.offsetHeight;
+          if (height > 0) {
+            containerRef.current.style.height = `${height}px`;
+          }
+        } else {
+          img.onload = () => {
+            if (containerRef.current) {
+              const height = img.offsetHeight;
+              if (height > 0) {
+                containerRef.current.style.height = `${height}px`;
+              }
+            }
+          };
+        }
+      }
+    }
+  }, [emblaApi]);
+  
   return (
-    <div className="relative w-full mb-8 media-carousel-container">
-      <Swiper
-        ref={swiperRef}
-        modules={[Navigation, Autoplay, EffectFade]}
-        spaceBetween={0}
-        slidesPerView={slidesPerView}
-        navigation={{
-          enabled: displayMedia.length > 1,
-          hideOnClick: false,
-          disabledClass: 'swiper-button-disabled',
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev',
-        }}
-        watchOverflow={true}
-        preventInteractionOnTransition={true}
-        effect="fade"
-        fadeEffect={{ 
-          crossFade: true,
-        }}
-        loop={shouldLoop}
-        autoplay={shouldAutoplay ? {
-          delay: 5000, // Display for 5 seconds
-          disableOnInteraction: false,
-        } : false}
-        speed={2000} // 2 second transition
-        onInit={handleSwiperInit}
-        onSlideChange={handleSlideChange}
-        onTransitionEnd={handleTransitionEnd}
-        className="w-full media-carousel-swiper"
-        autoHeight={false} // Disable autoHeight to use our custom height calculation
-        updateOnWindowResize={true}
-        observer={true}
-        observeParents={true}
-      >
-        {displayMedia.map((item, index) => (
-          <SwiperSlide key={`${item.src}-${index}`} className="media-carousel-slide">
-            <div
-              className="cursor-pointer relative media-carousel-image-container"
-              onClick={() => openLightbox(index)}
-            >
-              <MediaItemComponent item={item} />
+    <div className="project-media-container">
+      <div className="media-carousel-container" ref={containerRef}>
+        {displayMedia.length > 1 ? (
+          <>
+            <div className="embla" ref={emblaRef}>
+              <div className="embla__container">
+                {displayMedia.map((item, index) => (
+                  <div 
+                    key={`${item.src}-${index}`} 
+                    className="embla__slide"
+                    onClick={() => openLightbox(index)}
+                  >
+                    <div className="cursor-pointer relative media-carousel-image-container">
+                      <MediaItemComponent item={item} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+            
+            {/* Navigation buttons */}
+            <button 
+              className="embla__prev" 
+              onClick={(e) => {
+                e.stopPropagation();
+                scrollPrev();
+              }}
+              aria-label="Previous slide"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+              </svg>
+            </button>
+            <button 
+              className="embla__next" 
+              onClick={(e) => {
+                e.stopPropagation();
+                scrollNext();
+              }}
+              aria-label="Next slide"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+              </svg>
+            </button>
+          </>
+        ) : (
+          // Single item doesn't need carousel
+          <div className="cursor-pointer relative media-carousel-image-container" onClick={() => openLightbox(0)}>
+            <MediaItemComponent item={displayMedia[0]} />
+          </div>
+        )}
+      </div>
       
       {/* Hidden links for GLightbox */}
       <div className="hidden">
@@ -490,7 +434,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
             className={`glightbox-${projectId}`}
             data-gallery={galleryId}
             data-type={item.type}
-            data-description={title}
+            data-description=""
           >
             {/* Hidden content for GLightbox */}
           </a>

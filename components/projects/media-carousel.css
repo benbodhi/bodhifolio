@@ -15,37 +15,48 @@
   overflow: hidden;
   border-radius: 0.5rem;
   background-color: transparent;
-  transition: height 2s ease; /* Match the 2s transition of slides */
+  transition: height 0.3s ease; /* Smooth height transition */
+  min-height: 200px; /* Minimum height to prevent layout shifts */
 }
 
-/* Swiper Container */
-.media-carousel-swiper {
-  width: 100% !important;
-  max-width: 100% !important;
+/* Embla Carousel */
+.embla {
   overflow: hidden;
-  background-color: transparent;
-  transition: height 2s ease !important; /* Match the 2s transition of slides */
-}
-
-/* Swiper Slide */
-.media-carousel-slide {
-  width: 100% !important;
-  max-width: 100% !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: transparent;
-  height: auto !important; /* Allow height to adjust based on content */
-  min-height: 0 !important; /* Prevent minimum height */
-  transition: opacity 2s ease; /* Match the 2s transition of slides */
-  position: relative !important; /* Keep all slides in the flow by default */
-}
-
-/* Media Item Link */
-.media-item {
-  display: block;
   width: 100%;
-  text-decoration: none;
+  position: relative;
+}
+
+.embla__container {
+  display: block; /* Changed from flex to block to prevent sliding */
+  width: 100%;
+  position: relative; /* Needed for absolute positioning of slides */
+  height: 100%;
+}
+
+.embla__slide {
+  position: absolute; /* All slides are absolutely positioned */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none; /* Disable pointer events on hidden slides */
+}
+
+/* Make the active slide visible */
+.embla__slide.is-selected {
+  opacity: 1;
+  z-index: 2;
+  position: relative; /* Keep the selected slide in the flow */
+  pointer-events: auto; /* Enable pointer events on visible slide */
+}
+
+/* Media Item Wrapper */
+.media-item-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
 /* Image Container */
@@ -75,7 +86,7 @@
   display: block;
   width: 100%;
   height: auto;
-  object-fit: cover; /* Changed from contain to cover */
+  object-fit: cover;
   background-color: transparent;
 }
 
@@ -86,7 +97,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none; /* Allow clicks to pass through to the container */
+  pointer-events: none;
 }
 
 /* Video play button */
@@ -98,155 +109,54 @@
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 /* Media container hover effect */
-.media-carousel-image-container:hover .video-play-button {
+.media-carousel-image-container:hover .video-play-button,
+.media-carousel-video-container:hover .video-play-button {
   transform: scale(1.1);
   background-color: rgba(0, 0, 0, 0.7);
 }
 
-/* Hide navigation arrows by default */
-.swiper-button-next,
-.swiper-button-prev {
-  opacity: 0;
-  visibility: hidden; /* Completely hide the buttons */
-  transition: opacity 0.2s ease, visibility 0s 0.2s; /* Immediate hide after fade */
-  background-color: rgba(0, 0, 0, 0.5) !important; /* Force consistent background */
-  width: 40px !important;
-  height: 40px !important;
+/* Navigation Buttons */
+.embla__prev,
+.embla__next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
-  pointer-events: none; /* Disable interaction when invisible */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  z-index: 10 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
-  transform: translateY(-50%) !important;
-  top: 50% !important;
+  z-index: 20;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+  border: none;
+  padding: 0;
 }
 
-/* Show navigation arrows only on hover */
-.media-carousel-container:hover .swiper-button-next,
-.media-carousel-container:hover .swiper-button-prev {
-  opacity: 1 !important; /* Force full opacity */
-  visibility: visible; /* Make buttons visible on hover */
-  transition: opacity 0.2s ease, visibility 0s 0s; /* Immediate show */
-  pointer-events: auto; /* Enable interaction when visible */
+.embla__prev {
+  left: 10px;
 }
 
-/* Ensure the buttons have the same position from edges */
-.swiper-button-prev {
-  left: 10px !important;
+.embla__next {
+  right: 10px;
 }
 
-.swiper-button-next {
-  right: 10px !important;
+.media-carousel-container:hover .embla__prev,
+.media-carousel-container:hover .embla__next {
+  opacity: 1;
 }
 
-/* Make navigation arrows smaller and more subtle */
-.swiper-button-next:after,
-.swiper-button-prev:after {
-  font-size: 1.2rem !important;
-  color: white !important; /* Force white color */
-  font-weight: bold;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* Remove old play button styles */
-.media-carousel-play-button,
-.media-carousel-play-icon,
-.hover-only {
-  display: none !important;
-}
-
-/* Override Swiper's default styles */
-.swiper {
-  max-width: 100% !important;
-  width: 100% !important;
-  background-color: transparent;
-  height: auto !important; /* Allow height to adjust based on content */
-  transition: height 2s ease !important; /* Match the 2s transition of slides */
-  min-height: 0 !important; /* Prevent minimum height */
-  display: flex !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.swiper-wrapper {
-  max-width: 100% !important;
-  width: 100% !important;
-  background-color: transparent;
-  height: auto !important; /* Allow height to adjust based on content */
-  transition: height 2s ease !important; /* Match the 2s transition of slides */
-  min-height: 0 !important; /* Prevent minimum height */
-  align-items: flex-start !important; /* Align slides to the top */
-  position: relative !important;
-}
-
-.swiper-slide {
-  max-width: 100% !important;
-  width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
-  background-color: transparent;
-  height: auto !important; /* Allow height to adjust based on content */
-  min-height: 0 !important; /* Prevent minimum height */
-}
-
-/* Hide pagination dots */
-.swiper-pagination {
-  display: none !important;
-}
-
-/* Fade effect customization */
-.swiper-fade .swiper-slide {
-  transition-property: opacity !important;
-  pointer-events: none;
-  position: absolute !important;
-  left: 0 !important;
-  top: 0 !important;
-  width: 100% !important;
-  opacity: 0 !important;
-}
-
-.swiper-fade .swiper-slide-active {
-  pointer-events: auto;
-  z-index: 2 !important;
-  position: relative !important;
-  opacity: 1 !important;
-}
-
-/* Remove the rule that hides inactive slides */
-.swiper-slide:not(.swiper-slide-active):not(.swiper-slide-prev):not(.swiper-slide-next) {
-  position: absolute !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-  left: 0 !important;
-  top: 0 !important;
-  width: 100% !important;
-}
-
-/* Ensure active slide and transitioning slides are visible */
-.swiper-slide-active,
-.swiper-slide-prev,
-.swiper-slide-next {
-  opacity: 1 !important;
-  position: relative !important;
-  height: auto !important;
-  visibility: visible !important;
-  z-index: 2 !important;
+.embla__prev:hover,
+.embla__next:hover {
+  transform: translateY(-50%) scale(1.1);
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* GLightbox customizations */
@@ -254,12 +164,6 @@
   width: 100%;
   height: 100%;
   background: #000 !important;
-}
-
-/* Hide navigation for single items */
-.glightbox-container.single-item .gnext,
-.glightbox-container.single-item .gprev {
-  display: none !important;
 }
 
 /* Style the lightbox play button to match our carousel */
@@ -270,7 +174,10 @@
   background-color: rgba(0, 0, 0, 0.5) !important;
   border: none !important;
   box-shadow: none !important;
-  transition: transform 0.2s ease, background-color 0.2s ease !important;
+  transition: transform 0.3s ease, background-color 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .goverlay .gplay-btn:hover {
@@ -282,11 +189,11 @@
 .goverlay .gplay-btn svg,
 .goverlay .gplay-btn path {
   fill: white !important;
-  width: 24px !important;
-  height: 24px !important;
+  width: 48px !important;
+  height: 48px !important;
 }
 
-/* Style the lightbox navigation buttons to match our carousel */
+/* Style the lightbox navigation buttons */
 .glightbox-container .gnext,
 .glightbox-container .gprev {
   background-color: rgba(0, 0, 0, 0.5) !important;
@@ -294,10 +201,9 @@
   height: 40px !important;
   border-radius: 50% !important;
   opacity: 0 !important;
-  transition: opacity 0.2s ease !important;
+  transition: opacity 0.3s ease, transform 0.3s ease !important;
 }
 
-/* Show lightbox navigation on hover */
 .glightbox-container:hover .gnext,
 .glightbox-container:hover .gprev {
   opacity: 0.7 !important;
@@ -309,6 +215,7 @@
   transform: scale(1.1) !important;
 }
 
+/* Lightbox content */
 .gslide-media {
   max-width: 100%;
   background: #000 !important;
@@ -327,7 +234,6 @@
   object-fit: contain;
 }
 
-/* Fix white bar below videos */
 .gslide-description {
   display: none !important;
 }
@@ -344,7 +250,7 @@
   background: rgba(0, 0, 0, 0.9) !important;
 }
 
-/* Fix for video player */
+/* Video player */
 .plyr {
   background: #000 !important;
   cursor: pointer !important;
@@ -355,7 +261,6 @@
   cursor: pointer !important;
 }
 
-/* Video controls */
 .plyr__controls {
   cursor: pointer !important;
 }
@@ -364,23 +269,6 @@
   cursor: pointer !important;
 }
 
-/* Make sure video controls are visible */
 .plyr--video .plyr__controls {
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.7)) !important;
-}
-
-/* Override any Swiper default behaviors that might cause lag */
-.swiper-button-disabled {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  transition: opacity 0.2s ease, visibility 0s 0.2s !important;
-  background-color: rgba(0, 0, 0, 0.5) !important; /* Keep same background even when disabled */
-}
-
-.media-carousel-container:hover .swiper-button-disabled {
-  opacity: 0.5 !important; /* Slightly visible but clearly disabled */
-  visibility: visible !important;
-  transition: opacity 0.2s ease, visibility 0s 0s !important;
-  pointer-events: none !important;
-  background-color: rgba(0, 0, 0, 0.5) !important; /* Keep same background even when disabled */
 } 
