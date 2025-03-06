@@ -34,26 +34,7 @@ export const projects: Project[] = [
     title: `SVG Support`,
     type: `software`,
     description: `Back in 2013, I published my SVG Support WordPress plugin so I could more easily install it on the sites I was building.<br><br>It's <a href="https://github.com/benbodhi/svg-support">open source</a>, free to use and has since grown to be used on 1 million+ active websites.`,
-    media: [
-      {
-        type: `image`,
-        src: `/project-media/svg-support.png`
-      }
-      // Test different video styles and aspect ratios
-      // ,
-      // {
-      //   type: `video`,
-      //   src: `https://youtube.com/shorts/nViMYrFpIis`
-      // },
-      // {
-      //   type: `video`,
-      //   src: `https://youtu.be/igODARo6hZg`
-      // },
-      // {
-      //   type: `video`,
-      //   src: `https://youtu.be/sSOxPJD-VNo`
-      // }
-    ],
+    media: [],
     links: [
       {
         label: `svg.support`,
@@ -187,7 +168,72 @@ export const projects: Project[] = [
     title: `Bicycle Day Reflections`,
     type: `project`,
     description: `A collection of 420 NFTs, <a href="https://highlight.xyz/mint/base:0xA3527304322E1B2E9716E5f9c70C3F9b816A7299">available to collect</a>, exploring the synergy between <strong>human creativity and AI tooling in a psychedelic context</strong>.<br><br>Inspired by Bicycle Day, this project envisions what a camera might capture if it could perceive reality through the lens of a psychedelic experience.<br><br>While the human mind sees <strong>energy, depth, and intricate patterns</strong>, traditional photography flattens it to the "ordinary".<br><br><em>What if the lens could truly see?</em>`,
-    media: [],
+    media: [
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-42.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-48.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-53.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-57.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-76.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-82.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-100.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-133.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-246.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-255.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-282.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-289.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-333.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-356.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-368.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/benbodhi-bicycle-day-384.png`
+      }      
+    ],
     links: [
       {
         label: `View/Collect`,
