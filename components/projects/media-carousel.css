@@ -15,7 +15,7 @@
   overflow: hidden;
   border-radius: 0.5rem;
   background-color: transparent;
-  transition: height 0.3s ease; /* Add smooth transition for height changes */
+  transition: height 2s ease; /* Match the 2s transition of slides */
 }
 
 /* Swiper Container */
@@ -24,7 +24,7 @@
   max-width: 100% !important;
   overflow: hidden;
   background-color: transparent;
-  transition: height 0.3s ease; /* Add smooth transition for height changes */
+  transition: height 2s ease !important; /* Match the 2s transition of slides */
 }
 
 /* Swiper Slide */
@@ -37,7 +37,7 @@
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
   min-height: 0 !important; /* Prevent minimum height */
-  transition: opacity 0.5s ease; /* Smooth opacity transition */
+  transition: opacity 2s ease; /* Match the 2s transition of slides */
   position: relative !important; /* Keep all slides in the flow by default */
 }
 
@@ -79,40 +79,95 @@
   background-color: transparent;
 }
 
-/* Play Button */
-.media-carousel-play-button {
+/* Video play overlay */
+.video-play-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.3);
-  transition: background-color 0.3s, opacity 0.3s;
+  pointer-events: none; /* Allow clicks to pass through to the container */
 }
 
-/* Play button that only shows on hover */
-.hover-only {
-  opacity: 0;
-}
-
-.media-carousel-video-container:hover .hover-only {
-  opacity: 1;
-}
-
-.media-carousel-play-button:hover {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Play Icon */
-.media-carousel-play-icon {
-  width: 4rem;
-  height: 4rem;
+/* Video play button */
+.video-play-button {
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.8);
-  color: black;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* Media container hover effect */
+.media-carousel-image-container:hover .video-play-button {
+  transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Hide navigation arrows by default */
+.swiper-button-next,
+.swiper-button-prev {
+  opacity: 0;
+  visibility: hidden; /* Completely hide the buttons */
+  transition: opacity 0.2s ease, visibility 0s 0.2s; /* Immediate hide after fade */
+  background-color: rgba(0, 0, 0, 0.5) !important; /* Force consistent background */
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50%;
+  pointer-events: none; /* Disable interaction when invisible */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 10 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-50%) !important;
+  top: 50% !important;
+}
+
+/* Show navigation arrows only on hover */
+.media-carousel-container:hover .swiper-button-next,
+.media-carousel-container:hover .swiper-button-prev {
+  opacity: 1 !important; /* Force full opacity */
+  visibility: visible; /* Make buttons visible on hover */
+  transition: opacity 0.2s ease, visibility 0s 0s; /* Immediate show */
+  pointer-events: auto; /* Enable interaction when visible */
+}
+
+/* Ensure the buttons have the same position from edges */
+.swiper-button-prev {
+  left: 10px !important;
+}
+
+.swiper-button-next {
+  right: 10px !important;
+}
+
+/* Make navigation arrows smaller and more subtle */
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 1.2rem !important;
+  color: white !important; /* Force white color */
+  font-weight: bold;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Remove old play button styles */
+.media-carousel-play-button,
+.media-carousel-play-icon,
+.hover-only {
+  display: none !important;
 }
 
 /* Override Swiper's default styles */
@@ -121,7 +176,7 @@
   width: 100% !important;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
-  transition: height 0.3s ease !important; /* Add smooth transition for height changes */
+  transition: height 2s ease !important; /* Match the 2s transition of slides */
   min-height: 0 !important; /* Prevent minimum height */
   display: flex !important;
   position: relative !important;
@@ -133,7 +188,7 @@
   width: 100% !important;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
-  transition: height 0.3s ease !important; /* Add smooth transition for height changes */
+  transition: height 2s ease !important; /* Match the 2s transition of slides */
   min-height: 0 !important; /* Prevent minimum height */
   align-items: flex-start !important; /* Align slides to the top */
   position: relative !important;
@@ -152,27 +207,6 @@
 /* Hide pagination dots */
 .swiper-pagination {
   display: none !important;
-}
-
-/* Hide navigation arrows by default */
-.swiper-button-next,
-.swiper-button-prev {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Show navigation arrows on hover */
-.media-carousel-container:hover .swiper-button-next,
-.media-carousel-container:hover .swiper-button-prev {
-  opacity: 1;
-}
-
-/* Make navigation arrows smaller and more subtle */
-.swiper-button-next:after,
-.swiper-button-prev:after {
-  font-size: 1.5rem !important;
-  color: white;
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
 /* Fade effect customization */
@@ -226,6 +260,53 @@
 .glightbox-container.single-item .gnext,
 .glightbox-container.single-item .gprev {
   display: none !important;
+}
+
+/* Style the lightbox play button to match our carousel */
+.goverlay .gplay-btn {
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 50% !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.goverlay .gplay-btn:hover {
+  transform: scale(1.1) !important;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Style the play button icon */
+.goverlay .gplay-btn svg,
+.goverlay .gplay-btn path {
+  fill: white !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* Style the lightbox navigation buttons to match our carousel */
+.glightbox-container .gnext,
+.glightbox-container .gprev {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+/* Show lightbox navigation on hover */
+.glightbox-container:hover .gnext,
+.glightbox-container:hover .gprev {
+  opacity: 0.7 !important;
+}
+
+.glightbox-container .gnext:hover,
+.glightbox-container .gprev:hover {
+  opacity: 1 !important;
+  transform: scale(1.1) !important;
 }
 
 .gslide-media {
@@ -286,4 +367,20 @@
 /* Make sure video controls are visible */
 .plyr--video .plyr__controls {
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.7)) !important;
+}
+
+/* Override any Swiper default behaviors that might cause lag */
+.swiper-button-disabled {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.2s ease, visibility 0s 0.2s !important;
+  background-color: rgba(0, 0, 0, 0.5) !important; /* Keep same background even when disabled */
+}
+
+.media-carousel-container:hover .swiper-button-disabled {
+  opacity: 0.5 !important; /* Slightly visible but clearly disabled */
+  visibility: visible !important;
+  transition: opacity 0.2s ease, visibility 0s 0s !important;
+  pointer-events: none !important;
+  background-color: rgba(0, 0, 0, 0.5) !important; /* Keep same background even when disabled */
 } 
