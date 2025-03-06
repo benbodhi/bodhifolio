@@ -15,6 +15,7 @@
   overflow: hidden;
   border-radius: 0.5rem;
   background-color: transparent;
+  transition: height 0.3s ease; /* Add smooth transition for height changes */
 }
 
 /* Swiper Container */
@@ -23,6 +24,7 @@
   max-width: 100% !important;
   overflow: hidden;
   background-color: transparent;
+  transition: height 0.3s ease; /* Add smooth transition for height changes */
 }
 
 /* Swiper Slide */
@@ -116,6 +118,7 @@
   width: 100% !important;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
+  transition: height 0.3s ease; /* Add smooth transition for height changes */
 }
 
 .swiper-wrapper {
@@ -123,6 +126,7 @@
   width: 100% !important;
   background-color: transparent;
   height: auto !important; /* Allow height to adjust based on content */
+  transition: height 0.3s ease; /* Add smooth transition for height changes */
 }
 
 .swiper-slide {
@@ -167,6 +171,17 @@
 
 .swiper-fade .swiper-slide-active {
   z-index: 1;
+}
+
+/* Fix for Swiper auto height */
+.swiper-container-autoheight, 
+.swiper-container-autoheight .swiper-slide {
+  height: auto !important;
+}
+
+.swiper-container-autoheight .swiper-wrapper {
+  align-items: flex-start;
+  transition-property: transform, height !important;
 }
 
 /* GLightbox customizations */

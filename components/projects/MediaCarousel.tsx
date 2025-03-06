@@ -121,7 +121,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   const [lightboxInitialized, setLightboxInitialized] = useState(false);
   const swiperRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [swiperHeight, setSwiperHeight] = useState<string>("auto");
+  const [swiperInstance, setSwiperInstance] = useState<any>(null);
   
   // For empty media array, return nothing
   if (!media || media.length === 0) {
@@ -136,6 +136,20 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   
   // Create a unique gallery ID for this project
   const galleryId = `project-gallery-${projectId}`;
+  
+  // Safely update the swiper height
+  const updateSwiperHeight = () => {
+    if (swiperInstance && typeof swiperInstance.updateAutoHeight === 'function') {
+      try {
+        // Use requestAnimationFrame to ensure DOM has updated
+        requestAnimationFrame(() => {
+          swiperInstance.updateAutoHeight();
+        });
+      } catch (error) {
+        console.error("Error updating swiper height:", error);
+      }
+    }
+  };
   
   useEffect(() => {
     // Dynamically import GLightbox only on the client side
@@ -211,24 +225,24 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
     };
   }, [shouldLoop, projectId]);
   
+  // Effect to update height when active index changes
+  useEffect(() => {
+    updateSwiperHeight();
+  }, [activeIndex]);
+  
   // Handle slide change
   const handleSlideChange = (swiper: any) => {
     setActiveIndex(swiper.activeIndex);
+  };
+  
+  // Handle swiper initialization
+  const handleSwiperInit = (swiper: any) => {
+    setSwiperInstance(swiper);
     
-    // Update swiper height after slide change to match current slide content
-    if (swiper && swiper.slides && swiper.slides[swiper.activeIndex]) {
-      const currentSlide = swiper.slides[swiper.activeIndex];
-      const slideContent = currentSlide.querySelector('.media-carousel-image');
-      
-      if (slideContent) {
-        // Force a reflow to ensure the image has loaded and has proper dimensions
-        setTimeout(() => {
-          if (swiper && swiper.updateAutoHeight) {
-            swiper.updateAutoHeight(0);
-          }
-        }, 50);
-      }
-    }
+    // Initial height update after a short delay to ensure images are loaded
+    setTimeout(() => {
+      updateSwiperHeight();
+    }, 100);
   };
   
   return (
@@ -248,9 +262,11 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
         } : false}
         className="media-carousel-swiper"
         onSlideChange={handleSlideChange}
+        onSwiper={handleSwiperInit}
         observer={true}
         observeParents={true}
         autoHeight={true}
+        updateOnWindowResize={true}
       >
         {displayMedia.map((item, index) => {
           const thumbnailSrc = item.type === "video" ? getVideoThumbnail(item) : item.src;
@@ -275,9 +291,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
                       loading="lazy"
                       onLoad={() => {
                         // Update swiper height after image loads
-                        if (swiperRef.current && swiperRef.current.swiper) {
-                          swiperRef.current.swiper.updateAutoHeight(0);
-                        }
+                        updateSwiperHeight();
                       }}
                     />
                   </div>
@@ -300,9 +314,7 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
                       loading="lazy"
                       onLoad={() => {
                         // Update swiper height after thumbnail loads
-                        if (swiperRef.current && swiperRef.current.swiper) {
-                          swiperRef.current.swiper.updateAutoHeight(0);
-                        }
+                        updateSwiperHeight();
                       }}
                       onError={(e) => {
                         // If maxresdefault fails, fallback to hqdefault
@@ -311,6 +323,11 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
                              (!item.videoType && (item.src.includes("youtube.com") || item.src.includes("youtu.be"))))) {
                           const videoId = extractYouTubeID(item.src);
                           (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                          
+                          // Update height after fallback image loads
+                          (e.target as HTMLImageElement).onload = () => {
+                            updateSwiperHeight();
+                          };
                         }
                       }}
                     />
