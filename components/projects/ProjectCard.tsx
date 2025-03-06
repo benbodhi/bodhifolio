@@ -2,9 +2,6 @@ import Image from "next/image"
 import { MediaItem, ProjectItemProps } from "@/lib/projects/types"
 import { cn } from "@/lib/utils"
 import { useState, useEffect, useCallback, useRef, memo } from "react"
-import Lightbox from "yet-another-react-lightbox"
-import "yet-another-react-lightbox/styles.css"
-import Video from "yet-another-react-lightbox/plugins/video"
 import MediaCarousel from "./MediaCarousel"
 
 // Define types for lightbox slides
@@ -19,6 +16,66 @@ type LightboxSlide = {
     src: string;
     type: string;
   }[];
+} | {
+  // Custom slide type for YouTube/Vimeo
+  custom: {
+    type: 'youtube' | 'vimeo';
+    id: string;
+    render: () => React.ReactNode;
+  }
+};
+
+// Custom YouTube component
+const YouTubeEmbed = memo(({ videoId }: { videoId: string }) => {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-black">
+      <div className="w-full max-w-5xl aspect-video">
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0&modestbranding=1`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+          style={{ border: 'none' }}
+        />
+      </div>
+    </div>
+  );
+});
+
+YouTubeEmbed.displayName = 'YouTubeEmbed';
+
+// Custom Vimeo component
+const VimeoEmbed = memo(({ videoId }: { videoId: string }) => {
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-black">
+      <div className="w-full max-w-5xl aspect-video">
+        <iframe
+          src={`https://player.vimeo.com/video/${videoId}?autoplay=1&title=0&byline=0&portrait=0&transparent=0&responsive=1`}
+          allow="autoplay; fullscreen; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+          style={{ border: 'none' }}
+        />
+      </div>
+    </div>
+  );
+});
+
+VimeoEmbed.displayName = 'VimeoEmbed';
+
+// Custom render function for the lightbox
+const renderCustomSlide = (slide: any) => {
+  if (!slide.custom) return undefined;
+  
+  if (slide.custom.type === 'youtube') {
+    return <YouTubeEmbed videoId={slide.custom.id} />;
+  }
+  
+  if (slide.custom.type === 'vimeo') {
+    return <VimeoEmbed videoId={slide.custom.id} />;
+  }
+  
+  return undefined;
 };
 
 // Function to format video URLs for embedding
@@ -307,135 +364,70 @@ const ImageCarousel = memo(({
 
 ImageCarousel.displayName = 'ImageCarousel';
 
-// Helper function to convert legacy media to unified format
+/**
+ * Determines the video type from a URL
+ */
+const getVideoTypeFromUrl = (url: string): 'youtube' | 'vimeo' | 'local' => {
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    return 'youtube';
+  }
+  if (url.includes('vimeo.com')) {
+    return 'vimeo';
+  }
+  return 'local';
+};
+
+/**
+ * Converts legacy media fields to the unified MediaItem[] format
+ */
 const convertLegacyMediaToUnified = (project: ProjectItemProps['project']): MediaItem[] => {
   const media: MediaItem[] = [];
   
-  // Add images
-  if (project.images && project.images.length > 0) {
-    project.images.forEach(src => {
-      media.push({
-        type: 'image',
-        src
-      });
-    });
-  } else if (project.image) {
+  // Add cover image if it exists
+  if (project.image) {
     media.push({
       type: 'image',
-      src: project.image
+      src: project.image,
+      isCover: true
     });
   }
   
-  // Add video
+  // Add additional images if they exist
+  if (project.images && Array.isArray(project.images)) {
+    project.images.forEach(img => {
+      media.push({
+        type: 'image',
+        src: img
+      });
+    });
+  }
+  
+  // Add video if it exists
   if (project.videoUrl) {
+    const videoType = getVideoTypeFromUrl(project.videoUrl);
     media.push({
       type: 'video',
-      src: project.videoUrl
+      src: project.videoUrl,
+      videoType
     });
   }
   
   return media;
 };
 
+/**
+ * Renders HTML content safely
+ */
+const RenderHTML = ({ html }: { html: string }) => {
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+};
+
 export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
+  // Use unified media format or convert from legacy fields
+  const mediaItems = project.media || convertLegacyMediaToUnified(project);
   
-  // Use the new unified media approach
-  const media = project.media || [];
-  
-  // If no media is defined, create it from legacy fields
-  const unifiedMedia = media.length > 0 
-    ? media 
-    : convertLegacyMediaToUnified(project);
-  
-  // Find cover media item if specified
-  const coverMediaItem = unifiedMedia.find(item => item.isCover);
-  
-  // If there's a cover media item, show it first, otherwise show the first item
-  const displayMedia = coverMediaItem 
-    ? [coverMediaItem, ...unifiedMedia.filter(item => !item.isCover)]
-    : unifiedMedia;
-  
-  // Format media for lightbox
-  const lightboxSlides: LightboxSlide[] = unifiedMedia.map(item => {
-    if (item.type === 'image') {
-      // For images, just return the source
-      return { src: item.src };
-    } else {
-      // For videos, we need to format them for the lightbox video plugin
-      let videoId = '';
-      
-      // Handle YouTube videos
-      if (item.src.includes('youtube.com') || item.src.includes('youtu.be')) {
-        // Extract video ID
-        if (item.src.includes('youtube.com/watch')) {
-          const urlParams = new URL(item.src).searchParams;
-          videoId = urlParams.get('v') || '';
-        } else if (item.src.includes('youtu.be/')) {
-          videoId = item.src.split('youtu.be/')[1]?.split('?')[0] || '';
-        } else if (item.src.includes('youtube.com/embed/')) {
-          videoId = item.src.split('youtube.com/embed/')[1]?.split('?')[0] || '';
-        } else if (item.src.includes('youtube.com/shorts/')) {
-          videoId = item.src.split('youtube.com/shorts/')[1]?.split('?')[0] || '';
-        }
-        
-        if (videoId) {
-          return {
-            type: 'video' as const,
-            width: 1280,
-            height: 720,
-            poster: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-            sources: [
-              {
-                src: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0`,
-                type: 'video/mp4'
-              }
-            ]
-          };
-        }
-      }
-      
-      // Handle Vimeo videos
-      if (item.src.includes('vimeo.com')) {
-        const vimeoId = item.src.split('vimeo.com/')[1]?.split('?')[0] || '';
-        if (vimeoId) {
-          return {
-            type: 'video' as const,
-            width: 1280,
-            height: 720,
-            poster: '', // Empty poster for Vimeo
-            sources: [
-              {
-                src: `https://player.vimeo.com/video/${vimeoId}?autoplay=1`,
-                type: 'video/mp4'
-              }
-            ]
-          };
-        }
-      }
-      
-      // Default fallback for direct video URLs
-      return {
-        type: 'video' as const,
-        width: 1280,
-        height: 720,
-        poster: '', // Empty poster for other videos
-        sources: [
-          {
-            src: item.src,
-            type: 'video/mp4'
-          }
-        ]
-      };
-    }
-  });
-  
-  // Handle media click to open lightbox
-  const handleMediaClick = useCallback((index: number) => {
-    setLightboxIndex(index);
-    setLightboxOpen(true);
-  }, []);
+  // Create a unique ID for this project based on its id or title
+  const projectId = `project-${project.id || project.title.toLowerCase().replace(/\s+/g, '-')}`;
   
   return (
     <div className="border-b border-[hsl(var(--border))] last:border-b-0">
@@ -444,74 +436,73 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         isFirstInColumn && "pt-0"
       )}>
         {/* Media Display */}
-        {displayMedia.length > 0 && (
-          <MediaCarousel 
-            media={displayMedia}
-            title={project.title}
-            onMediaClick={handleMediaClick}
-          />
+        {mediaItems.length > 0 && (
+          <div className="project-media-container">
+            <MediaCarousel 
+              media={mediaItems}
+              title={project.title}
+              projectId={projectId}
+            />
+          </div>
         )}
         
-        {/* Lightbox with video support */}
-        <Lightbox
-          open={lightboxOpen}
-          close={() => setLightboxOpen(false)}
-          slides={lightboxSlides}
-          index={lightboxIndex}
-          plugins={[Video]}
-          carousel={{ 
-            finite: false,
-            preload: 1,
-            padding: 0,
-            spacing: 0,
-            imageFit: "contain"
-          }}
-          controller={{ 
-            closeOnBackdropClick: true,
-            touchAction: "pan-y"
-          }}
-          render={{
-            buttonPrev: unifiedMedia.length > 1 ? undefined : () => null,
-            buttonNext: unifiedMedia.length > 1 ? undefined : () => null,
-            iconNext: () => (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                <path fillRule="evenodd" d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z" clipRule="evenodd" />
-              </svg>
-            ),
-            iconPrev: () => (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                <path fillRule="evenodd" d="M7.72 12.53a.75.75 0 010-1.06l7.5-7.5a.75.75 0 111.06 1.06L9.31 12l6.97 6.97a.75.75 0 11-1.06 1.06l-7.5-7.5z" clipRule="evenodd" />
-              </svg>
-            )
-          }}
-          styles={{
-            container: { backgroundColor: "rgba(0, 0, 0, 0.9)" },
-            slide: { width: "100%", height: "100%" }
-          }}
-          video={{
-            autoPlay: true,
-            controls: true,
-            playsInline: true,
-            controlsList: "nodownload",
-            loop: false
-          }}
-          animation={{ fade: 300 }}
-          on={{
-            view: ({ index }) => {
-              // Update the current index
-              setLightboxIndex(index);
-            }
-          }}
-        />
-        
-        {/* Project Content - Memoized to prevent re-renders */}
-        <ProjectContent 
-          title={project.title}
-          description={project.description}
-          listItems={project.listItems}
-          promo={project.promo}
-          links={project.links}
-        />
+        {/* Project Content */}
+        <div className="mt-6">
+          <hr className="gradient-hr h-1 w-16 mb-8 border-0 rounded-sm"></hr>
+          
+          <h3 className="text-3xl title-text mb-8">{project.title}</h3>
+          
+          <div className="content-text mb-8 text-[hsl(var(--content))]" dangerouslySetInnerHTML={{ 
+            __html: project.description.replace(/<a /g, '<a class="color-link" ') 
+          }} />
+          
+          {project.listItems && project.listItems.length > 0 && (
+            <ul className="list-disc pl-5 mb-8 text-[hsl(var(--content))]">
+              {project.listItems.map((item, index) => (
+                <li key={index} dangerouslySetInnerHTML={{ 
+                  __html: item.replace(/<a /g, '<a class="color-link" ') 
+                }} />
+              ))}
+            </ul>
+          )}
+          
+          {project.promo && (
+            <div 
+              className="bg-black/20 p-3 rounded-md text-sm font-medium mb-8 text-[hsl(var(--content))]"
+              dangerouslySetInnerHTML={{ __html: project.promo.replace(/<a /g, '<a class="color-link" ') }}
+            />
+          )}
+          
+          {project.links && project.links.length > 0 && (
+            <div className="flex flex-wrap gap-4">
+              {project.links.map((link, index) => (
+                <a
+                  key={index}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="project-card-button inline-flex items-center px-4 py-2 rounded-md group"
+                >
+                  {link.label}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-4 h-4 ml-1.5 transition-transform duration-300 group-hover:translate-x-0.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -14,6 +14,9 @@ export type MediaItem = {
   type: 'image' | 'video'
   src: string
   isCover?: boolean // Optional flag to mark an item as the cover
+  // Optional metadata for videos
+  videoType?: 'youtube' | 'vimeo' | 'local'
+  thumbnailUrl?: string
 }
 
 /**

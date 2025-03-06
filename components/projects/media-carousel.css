@@ -1,0 +1,233 @@
+/* Project Media Container */
+.project-media-container {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Media Carousel Container */
+.media-carousel-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 2rem;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: transparent;
+}
+
+/* Swiper Container */
+.media-carousel-swiper {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  background-color: transparent;
+}
+
+/* Swiper Slide */
+.media-carousel-slide {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+}
+
+/* Media Item Link */
+.media-item {
+  display: block;
+  width: 100%;
+  text-decoration: none;
+}
+
+/* Image Container */
+.media-carousel-image-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+}
+
+/* Video Container */
+.media-carousel-video-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+}
+
+/* Image */
+.media-carousel-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  background-color: transparent;
+}
+
+/* Play Button */
+.media-carousel-play-button {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s, opacity 0.3s;
+}
+
+/* Play button that only shows on hover */
+.hover-only {
+  opacity: 0;
+}
+
+.media-carousel-video-container:hover .hover-only {
+  opacity: 1;
+}
+
+.media-carousel-play-button:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Play Icon */
+.media-carousel-play-icon {
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: black;
+}
+
+/* Override Swiper's default styles */
+.swiper {
+  max-width: 100% !important;
+  width: 100% !important;
+  background-color: transparent;
+}
+
+.swiper-wrapper {
+  max-width: 100% !important;
+  width: 100% !important;
+  background-color: transparent;
+}
+
+.swiper-slide {
+  max-width: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  background-color: transparent;
+}
+
+/* Hide pagination dots */
+.swiper-pagination {
+  display: none !important;
+}
+
+/* Hide navigation arrows by default */
+.swiper-button-next,
+.swiper-button-prev {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show navigation arrows on hover */
+.media-carousel-container:hover .swiper-button-next,
+.media-carousel-container:hover .swiper-button-prev {
+  opacity: 1;
+}
+
+/* Make navigation arrows smaller and more subtle */
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 1.5rem !important;
+  color: white;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Fade effect customization */
+.swiper-fade .swiper-slide {
+  transition-property: opacity;
+}
+
+.swiper-fade .swiper-slide-active {
+  z-index: 1;
+}
+
+/* GLightbox customizations */
+.glightbox-container {
+  width: 100%;
+  height: 100%;
+  background: #000 !important;
+}
+
+.gslide-media {
+  max-width: 100%;
+  background: #000 !important;
+}
+
+.gslide-video {
+  width: auto;
+  max-width: 90vw;
+  background: #000 !important;
+  cursor: pointer !important;
+}
+
+.gslide-image img {
+  max-height: 90vh;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Fix white bar below videos */
+.gslide-description {
+  display: none !important;
+}
+
+.gslide {
+  background: #000 !important;
+}
+
+.gslide-inner-content {
+  background: #000 !important;
+}
+
+.goverlay {
+  background: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Fix for video player */
+.plyr {
+  background: #000 !important;
+  cursor: pointer !important;
+}
+
+.plyr__video-wrapper {
+  background: #000 !important;
+  cursor: pointer !important;
+}
+
+/* Video controls */
+.plyr__controls {
+  cursor: pointer !important;
+}
+
+.plyr__control {
+  cursor: pointer !important;
+}
+
+/* Make sure video controls are visible */
+.plyr--video .plyr__controls {
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.7)) !important;
+} 

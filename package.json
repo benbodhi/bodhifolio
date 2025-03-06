@@ -13,6 +13,7 @@
     "@radix-ui/react-slot": "^1.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "glightbox": "^3.3.1",
     "gsap": "^3.12.7",
     "lucide-react": "^0.477.0",
     "next": "^15.2.1",
@@ -20,9 +21,9 @@
     "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "swiper": "^11.2.5",
     "tailwind-merge": "^3.0.2",
-    "tailwindcss-animate": "^1.0.7",
-    "yet-another-react-lightbox": "^3.21.7"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.9",
