@@ -2,7 +2,7 @@ import Image from "next/image"
 import { MediaItem, ProjectItemProps } from "@/lib/projects/types"
 import { cn } from "@/lib/utils"
 import { useState, useEffect, useCallback, useRef, memo } from "react"
-import MediaCarousel from "./MediaCarousel"
+import ProjectMediaCarousel from "./ProjectMediaCarousel"
 
 // Define types for lightbox slides
 type LightboxSlide = {
@@ -438,7 +438,7 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         {/* Media Display */}
         {mediaItems.length > 0 && (
           <div className="project-media-container">
-            <MediaCarousel 
+            <ProjectMediaCarousel 
               media={mediaItems}
               title={project.title}
               projectId={projectId}

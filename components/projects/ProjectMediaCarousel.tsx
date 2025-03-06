@@ -4,92 +4,16 @@ import React, { useEffect, useCallback, useState, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Fade from 'embla-carousel-fade';
 import type { MediaItem } from "@/lib/projects/types";
-import "./media-carousel.css";
+import { getVideoThumbnail, getVideoEmbedUrl } from "./ProjectMediaUtils";
+import "./project-media-carousel.css";
 // Import GLightbox styles
 import "glightbox/dist/css/glightbox.css";
 
-interface MediaCarouselProps {
+export interface ProjectMediaCarouselProps {
   media: MediaItem[];
   title: string;
   projectId: string;
 }
-
-/**
- * Extracts YouTube Video ID from a URL
- */
-const extractYouTubeID = (url: string): string => {
-  const match = url.match(/(?:youtube\.com\/(?:.*v=|.*\/)|youtu\.be\/)([^&?/]+)/);
-  return match ? match[1] : "";
-};
-
-/**
- * Extracts Vimeo Video ID from a URL
- */
-const extractVimeoID = (url: string): string => {
-  const match = url.match(/(?:vimeo\.com\/)([^&?/]+)/);
-  return match ? match[1] : "";
-};
-
-/**
- * Gets the appropriate embed URL for videos
- */
-const getVideoEmbedUrl = (item: MediaItem): string => {
-  const { src, videoType } = item;
-  
-  // If videoType is explicitly set, use it
-  if (videoType) {
-    if (videoType === 'youtube') {
-      return `https://www.youtube.com/embed/${extractYouTubeID(src)}?autoplay=1`;
-    }
-    if (videoType === 'vimeo') {
-      return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1`;
-    }
-    return src; // Local video
-  }
-  
-  // Otherwise, try to detect from URL
-  if (src.includes("youtube.com") || src.includes("youtu.be")) {
-    return `https://www.youtube.com/embed/${extractYouTubeID(src)}?autoplay=1`;
-  }
-  if (src.includes("vimeo.com")) {
-    return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1`;
-  }
-  return src; // Local video
-};
-
-/**
- * Gets the appropriate thumbnail URL for videos
- */
-const getVideoThumbnail = (item: MediaItem): string => {
-  const { src, videoType, thumbnailUrl } = item;
-  
-  // If thumbnailUrl is explicitly set, use it
-  if (thumbnailUrl) {
-    return thumbnailUrl;
-  }
-  
-  // If videoType is explicitly set, use it
-  if (videoType) {
-    if (videoType === 'youtube') {
-      const videoId = extractYouTubeID(src);
-      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    }
-    if (videoType === 'vimeo') {
-      return `https://vumbnail.com/${extractVimeoID(src)}.jpg`;
-    }
-    return "/images/video-placeholder.jpg"; // Local video
-  }
-  
-  // Otherwise, try to detect from URL
-  if (src.includes("youtube.com") || src.includes("youtu.be")) {
-    const videoId = extractYouTubeID(src);
-    return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-  }
-  if (src.includes("vimeo.com")) {
-    return `https://vumbnail.com/${extractVimeoID(src)}.jpg`;
-  }
-  return "/images/video-placeholder.jpg"; // Fallback for local videos
-};
 
 // Simple MediaItem component to display an image or video thumbnail
 const MediaItemComponent = ({ item }: { item: MediaItem }) => {
@@ -114,7 +38,7 @@ const MediaItemComponent = ({ item }: { item: MediaItem }) => {
   );
 };
 
-const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
+const ProjectMediaCarousel = ({ media, title, projectId }: ProjectMediaCarouselProps) => {
   // Configure Embla with fade plugin
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: media.length > 1,
@@ -512,4 +436,4 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   );
 };
 
-export default MediaCarousel; 
+export default ProjectMediaCarousel; 
