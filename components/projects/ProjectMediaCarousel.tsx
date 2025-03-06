@@ -11,7 +11,7 @@ import "glightbox/dist/css/glightbox.css";
 
 export interface ProjectMediaCarouselProps {
   media: MediaItem[];
-  title: string;
+  _title?: string;
   projectId: string;
 }
 
@@ -38,7 +38,7 @@ const MediaItemComponent = ({ item }: { item: MediaItem }) => {
   );
 };
 
-const ProjectMediaCarousel = ({ media, title, projectId }: ProjectMediaCarouselProps) => {
+const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarouselProps) => {
   // Configure Embla with fade plugin
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: media.length > 1,
@@ -47,7 +47,7 @@ const ProjectMediaCarousel = ({ media, title, projectId }: ProjectMediaCarouselP
     dragFree: true, // Allows for more fluid dragging
     duration: 100 // Controls the speed of the transition in milliseconds
   }, [Fade()]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [_currentIndex, setCurrentIndex] = useState(0);
   const lightboxRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);

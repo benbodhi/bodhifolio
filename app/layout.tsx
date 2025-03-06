@@ -35,7 +35,33 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${nns.variable}`}>
-      <head />
+      <head>
+        {/* Script to prevent flash of unstyled content */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  // Get stored theme or default to system
+                  const theme = localStorage.getItem('theme') || 'system';
+                  
+                  // Apply the dark class based on theme or system preference
+                  if (theme === 'dark' || 
+                      (theme === 'system' && 
+                       window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {
+                  // Fail silently if localStorage is not available
+                  console.error('Error accessing localStorage:', e);
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${inter.className} ${nns.variable}`}>
         <ThemeProvider
           attribute="class"
@@ -44,7 +70,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          <main className="min-h-screen">
+          <main className="min-h-screen render-boost">
             {children}
           </main>
           <Footer />

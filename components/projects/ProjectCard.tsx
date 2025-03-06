@@ -5,7 +5,8 @@ import { useState, useEffect, useCallback, useRef, memo } from "react"
 import ProjectMediaCarousel from "./ProjectMediaCarousel"
 
 // Define types for lightbox slides
-type LightboxSlide = {
+// Prefixing with underscore to indicate it's intentionally unused
+type _LightboxSlide = {
   src: string;
 } | {
   type: 'video';
@@ -64,7 +65,8 @@ const VimeoEmbed = memo(({ videoId }: { videoId: string }) => {
 VimeoEmbed.displayName = 'VimeoEmbed';
 
 // Custom render function for the lightbox
-const renderCustomSlide = (slide: any) => {
+// Prefixing with underscore to indicate it's intentionally unused
+const _renderCustomSlide = (slide: any) => {
   if (!slide.custom) return undefined;
   
   if (slide.custom.type === 'youtube') {
@@ -283,6 +285,23 @@ const ImageCarousel = memo(({
   title: string;
   onImageClick: () => void;
 }) => {
+  // Always declare hooks at the top level, regardless of conditions
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [previousIndex, setPreviousIndex] = useState(images?.length ? images.length - 1 : 0);
+  
+  // Set up the rotation interval - only active when we have multiple images
+  useEffect(() => {
+    // Only set up interval if we have multiple images
+    if (images && images.length > 1) {
+      const interval = setInterval(() => {
+        setPreviousIndex(currentIndex);
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      }, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [currentIndex, images]);
+  
   // For single image, just render it directly
   if (!images || images.length <= 1) {
     return (
@@ -301,20 +320,6 @@ const ImageCarousel = memo(({
       </div>
     );
   }
-  
-  // For multiple images, use a simple index state
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [previousIndex, setPreviousIndex] = useState(images.length - 1);
-  
-  // Set up the rotation interval
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPreviousIndex(currentIndex);
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, [currentIndex, images.length]);
   
   return (
     <div 
@@ -416,9 +421,9 @@ const convertLegacyMediaToUnified = (project: ProjectItemProps['project']): Medi
 };
 
 /**
- * Renders HTML content safely
+ * Component to render HTML content safely
  */
-const RenderHTML = ({ html }: { html: string }) => {
+const _RenderHTML = ({ html }: { html: string }) => {
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
@@ -440,7 +445,7 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
           <div className="project-media-container">
             <ProjectMediaCarousel 
               media={mediaItems}
-              title={project.title}
+              _title={project.title}
               projectId={projectId}
             />
           </div>

@@ -1,10 +1,13 @@
 import { Noggles } from "@/components/icons/Noggles"
-import { RollingBomb } from "@/components/icons/RollingBomb"
+// Removing unused import
+// import { RollingBomb } from "@/components/icons/RollingBomb"
+import React from "react";
 
 /**
  * Props for the Footer component
  */
-interface FooterProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type FooterProps = React.HTMLAttributes<HTMLElement>;
 
 export function Footer({}: FooterProps) {
   return (

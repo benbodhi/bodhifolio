@@ -128,9 +128,28 @@
     border-color: hsl(var(--border));
   }
 
+  html {
+    /* Improve scrolling performance */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+  }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    min-height: 100%;
+    /* Prevent content shift during scrolling */
+    overflow-y: scroll;
+    /* Improve rendering performance */
+    will-change: scroll-position;
+    /* Force hardware acceleration */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    /* Prevent gray overlay during fast scrolling */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Interactive Element Styles */
@@ -147,6 +166,13 @@
   .cursor-pointer * {
     cursor: pointer !important;
   }
+}
+
+/* Improve rendering for all elements */
+.render-boost {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /*============================================================================

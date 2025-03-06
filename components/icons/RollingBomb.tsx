@@ -1,11 +1,13 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import { HTMLAttributes } from "react";
 
 /**
  * Props for the RollingBomb component
  */
-interface RollingBombProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type RollingBombProps = HTMLAttributes<HTMLDivElement>;
 
 export function RollingBomb({}: RollingBombProps) {
   const svgRef = useRef(null);

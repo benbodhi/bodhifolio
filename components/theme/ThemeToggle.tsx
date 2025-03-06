@@ -3,12 +3,13 @@
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/Button"
-import { useEffect, useState } from "react"
+import { useEffect, useState, ButtonHTMLAttributes } from "react"
 
 /**
  * Props for the ThemeToggle component
  */
-interface ThemeToggleProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type ThemeToggleProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function ThemeToggle({}: ThemeToggleProps) {
   const { setTheme, theme, resolvedTheme } = useTheme()

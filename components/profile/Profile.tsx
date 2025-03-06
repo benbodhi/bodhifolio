@@ -1,10 +1,12 @@
 import Image from "next/image"
 import Link from "next/link"
+import { HTMLAttributes } from "react"
 
 /**
  * Props for the Profile component
  */
-interface ProfileProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type ProfileProps = HTMLAttributes<HTMLElement>;
 
 export function Profile({}: ProfileProps) {
   return (

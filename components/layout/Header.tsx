@@ -1,11 +1,13 @@
 "use client"
 
 import { ThemeToggle } from "@/components/theme/ThemeToggle"
+import { HTMLAttributes } from "react"
 
 /**
  * Props for the Header component
  */
-interface HeaderProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type HeaderProps = HTMLAttributes<HTMLElement>;
 
 export function Header({}: HeaderProps) {
   return (
