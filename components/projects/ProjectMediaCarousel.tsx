@@ -9,6 +9,18 @@ import "./project-media-carousel.css";
 // Import GLightbox styles
 import "glightbox/dist/css/glightbox.css";
 
+// Define a more generic type for GLightbox to avoid type conflicts
+// Prefixing with underscore to indicate it's intentionally unused
+type _GLightboxType = {
+  openAt: (index: number) => void;
+  destroy: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on: (event: string, callback: (data: any) => void) => void;
+  close: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // Allow any other properties
+};
+
 export interface ProjectMediaCarouselProps {
   media: MediaItem[];
   _title?: string;
@@ -19,6 +31,7 @@ export interface ProjectMediaCarouselProps {
 const MediaItemComponent = ({ item }: { item: MediaItem }) => {
   return (
     <div className="media-item-wrapper">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img 
         src={item.type === "video" ? getVideoThumbnail(item) : item.src} 
         alt="" 
@@ -48,6 +61,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
     duration: 100 // Controls the speed of the transition in milliseconds
   }, [Fade()]);
   const [_currentIndex, setCurrentIndex] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lightboxRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
@@ -180,11 +194,12 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
             next: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
             prev: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>'
           }
-        } as any);
+        });
         
         lightboxRef.current = lightbox;
         
         // Handle zoom behavior to ensure proper centering
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (lightbox as any).on('slide_after_load', (data: any) => {
           const slideContent = data.slideNode.querySelector('.gslide-image img');
           if (slideContent) {
@@ -318,6 +333,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
             touchNavigation: displayMedia.length > 1,
             loop: displayMedia.length > 1,
             autoplayVideos: true
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           } as any);
           
           lightboxRef.current = lightbox;

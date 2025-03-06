@@ -66,6 +66,7 @@ VimeoEmbed.displayName = 'VimeoEmbed';
 
 // Custom render function for the lightbox
 // Prefixing with underscore to indicate it's intentionally unused
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _renderCustomSlide = (slide: any) => {
   if (!slide.custom) return undefined;
   
