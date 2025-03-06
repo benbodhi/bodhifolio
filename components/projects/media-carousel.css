@@ -218,6 +218,9 @@
 .gslide-media {
   max-width: 100%;
   background: #000 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .gslide-video {
@@ -227,10 +230,26 @@
   cursor: pointer !important;
 }
 
+.gslide-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .gslide-image img {
   max-height: 90vh;
   width: auto;
   object-fit: contain;
+  transition: transform 0.3s ease;
+  transform-origin: center center;
+}
+
+.gslide-image img.zoomed {
+  cursor: zoom-out !important;
+}
+
+.gslide-image img:not(.zoomed) {
+  cursor: zoom-in !important;
 }
 
 .gslide-description {

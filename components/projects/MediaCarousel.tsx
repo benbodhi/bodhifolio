@@ -240,6 +240,9 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
           touchNavigation: shouldLoopLightbox,
           loop: shouldLoopLightbox,
           autoplayVideos: true,
+          zoomable: true,
+          draggable: true,
+          preload: true, // Preload content for smoother transitions
           plyr: {
             config: {
               ratio: '16:9', // Default aspect ratio
@@ -257,6 +260,29 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
         } as any);
         
         lightboxRef.current = lightbox;
+        
+        // Handle zoom behavior to ensure proper centering
+        (lightbox as any).on('slide_after_load', (data: any) => {
+          const slideContent = data.slideNode.querySelector('.gslide-image img');
+          if (slideContent) {
+            // Add click handler for zooming
+            slideContent.addEventListener('click', function(this: HTMLElement, e: Event) {
+              // Prevent default zoom behavior
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // Toggle zoomed class
+              if (this.classList.contains('zoomed')) {
+                this.classList.remove('zoomed');
+                this.style.transform = '';
+              } else {
+                this.classList.add('zoomed');
+                // Center the image when zoomed
+                this.style.transform = 'scale(1.5)';
+              }
+            });
+          }
+        });
         
         // Hide navigation for single items
         if (displayMedia.length === 1) {
