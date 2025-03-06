@@ -52,11 +52,6 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   const containerRef = useRef<HTMLDivElement>(null);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   
-  // For empty media array, return nothing
-  if (!media || media.length === 0) {
-    return null;
-  }
-  
   // Check if there's a cover image that should be displayed exclusively
   const coverItem = media.find(item => item.isCover);
   
@@ -66,8 +61,9 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   // Create a unique gallery ID for this project
   const galleryId = `project-gallery-${projectId}`;
   
-  // Autoplay functionality
+  // Autoplay functionality - always define the callback regardless of conditions
   const autoplay = useCallback(() => {
+    // Early return moved inside the callback body
     if (!emblaApi || displayMedia.length <= 1) return;
     
     // Clear any existing timeout
@@ -89,7 +85,9 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   }, [emblaApi, displayMedia.length]);
   
   // Start autoplay when component mounts and when slide changes
+  // Always call useEffect regardless of conditions
   useEffect(() => {
+    // Early return moved inside the effect body
     if (!emblaApi || displayMedia.length <= 1) return;
     
     // Start autoplay
@@ -141,6 +139,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
 
   // Initialize GLightbox when component mounts
   useEffect(() => {
+    // Early return moved inside the effect body
     if (typeof window === 'undefined') return;
     
     const loadGLightbox = async () => {
@@ -241,6 +240,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   
   // Handle slide selection
   const onSelect = useCallback(() => {
+    // Early return moved inside the callback body
     if (!emblaApi) return;
     
     setCurrentIndex(emblaApi.selectedScrollSnap());
@@ -261,6 +261,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   }, [emblaApi]);
   
   useEffect(() => {
+    // Always call the effect, but handle the condition inside
     if (emblaApi) {
       emblaApi.on("select", onSelect);
       
@@ -286,13 +287,16 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
         window.removeEventListener('resize', onSelect);
       };
     }
+    // No early return, just an empty effect if emblaApi is not available
   }, [emblaApi, onSelect]);
   
   const scrollPrev = useCallback(() => {
+    // Condition inside the callback body
     if (emblaApi) emblaApi.scrollPrev();
   }, [emblaApi]);
   
   const scrollNext = useCallback(() => {
+    // Condition inside the callback body
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
   
@@ -333,6 +337,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   
   // Initialize the carousel with the first slide visible
   useEffect(() => {
+    // Early return moved inside the effect body
     if (!emblaApi) return;
     
     // Update height for the first slide
@@ -361,6 +366,11 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
       }
     }
   }, [emblaApi]);
+  
+  // For empty media array, return nothing - MOVED HERE after all hooks
+  if (!media || media.length === 0) {
+    return null;
+  }
   
   return (
     <div className="project-media-container">
