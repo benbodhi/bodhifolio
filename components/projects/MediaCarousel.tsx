@@ -119,7 +119,9 @@ const MediaCarousel = ({ media, title, projectId }: MediaCarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: media.length > 1,
     align: "center",
-    containScroll: false // Recommended when using fade plugin
+    containScroll: false, // Recommended when using fade plugin
+    dragFree: true, // Allows for more fluid dragging
+    duration: 100 // Controls the speed of the transition in milliseconds
   }, [Fade()]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const lightboxRef = useRef<any>(null);
