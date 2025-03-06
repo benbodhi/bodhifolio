@@ -365,6 +365,7 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
     } else {
       // For videos, we need to format them for the lightbox video plugin
       let videoId = '';
+      let videoType = 'video/mp4'; // Default video type
       
       // Extract YouTube video ID
       if (item.src.includes('youtube.com') || item.src.includes('youtu.be')) {
@@ -379,13 +380,13 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         
         if (videoId) {
           return {
-            type: 'video',
+            type: 'video' as const,
             width: 1280,
             height: 720,
             poster: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
             sources: [
               {
-                src: `https://www.youtube.com/watch?v=${videoId}`,
+                src: `https://www.youtube.com/embed/${videoId}`,
                 type: 'video/mp4'
               }
             ]
@@ -398,13 +399,13 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         const vimeoId = item.src.split('vimeo.com/')[1]?.split('?')[0] || '';
         if (vimeoId) {
           return {
-            type: 'video',
+            type: 'video' as const,
             width: 1280,
-            height: 1280,
+            height: 720,
             poster: '',
             sources: [
               {
-                src: `https://vimeo.com/${vimeoId}`,
+                src: `https://player.vimeo.com/video/${vimeoId}`,
                 type: 'video/mp4'
               }
             ]
@@ -412,16 +413,16 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         }
       }
       
-      // Default fallback
+      // Default fallback for direct video URLs
       return {
-        type: 'video',
+        type: 'video' as const,
         width: 1280,
         height: 720,
         poster: '',
         sources: [
           {
             src: item.src,
-            type: 'video/mp4'
+            type: videoType
           }
         ]
       };
@@ -457,7 +458,8 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
           index={lightboxIndex}
           plugins={[Video]}
           carousel={{ 
-            finite: false
+            finite: false,
+            preload: 1
           }}
           controller={{ 
             closeOnBackdropClick: true 
@@ -471,7 +473,7 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
             slide: { width: "100%", height: "100%" }
           }}
           video={{
-            autoPlay: true,
+            autoPlay: false,
             controls: true,
             playsInline: true,
             controlsList: "nodownload"

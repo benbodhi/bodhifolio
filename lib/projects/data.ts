@@ -8,13 +8,12 @@ export const projects: Project[] = [
     description: `<strong>NOUNER #1111</strong> is my 1977 Ford LTD Variety Bash car. I drive it around Australia, primarily raising money for Variety - The Children's Charity and raising awareness of <a href="https://nouns.world">Nouns</a>.`,
     media: [
       {
-        type: 'image',
-        src: `/nouner.lol-mudsplash-web.jpg`,
-        isCover: true
+        type: `image`,
+        src: `/project-media/nouner.lol-mudsplash-web.jpg`
       },
       {
-        type: 'image',
-        src: `/nouner.lol-side-web.jpg`
+        type: `image`,
+        src: `/project-media/nouner.lol-side-web.jpg`
       }
     ],
     links: [
@@ -35,7 +34,24 @@ export const projects: Project[] = [
     title: `SVG Support`,
     type: `software`,
     description: `Back in 2013, I published my SVG Support WordPress plugin so I could more easily install it on the sites I was building.<br><br>It's <a href="https://github.com/benbodhi/svg-support">open source</a>, free to use and has since grown to be used on 1 million+ active websites.`,
-    media: [],
+    media: [
+      {
+        type: `image`,
+        src: `/project-media/svg-support.png`
+      },
+      {
+        type: `video`,
+        src: `https://youtube.com/shorts/nViMYrFpIis`
+      },
+      {
+        type: `video`,
+        src: `https://youtu.be/igODARo6hZg`
+      },
+      {
+        type: `video`,
+        src: `https://youtu.be/sSOxPJD-VNo`
+      }
+    ],
     links: [
       {
         label: `svg.support`,
@@ -49,7 +65,17 @@ export const projects: Project[] = [
     title: `Alps`,
     type: `project`,
     description: `Co-founder of Alps, a community of snow and mountain loving people, empowered by a membership auction system. The auction proceeds go into a treasury that is managed by members.<br><br>Built on <a href="https://ethereum.org/">Ξthereum</a>`,
-    media: [],
+    media: [
+      {
+        type: `image`,
+        src: `/project-media/alps-lil-bubble-level-up.jpg`
+      },
+      {
+        type: `image`,
+        src: `/project-media/alps-scene-gondy.jpg`,
+        isCover: true
+      }
+    ],
     links: [
       {
         label: `alps.wtf`,
@@ -70,7 +96,7 @@ export const projects: Project[] = [
     description: `Leo Clark made a short film documentary about my journey in Nouns and beyond.<br><br><a href="https://www.nouns.camp/proposals/461">Funded by Nouns - Prop 461</a>`,
     media: [
       {
-        type: 'video',
+        type: `video`,
         src: `https://youtu.be/B9xxBuckhxs`,
         isCover: true
       }
@@ -84,7 +110,7 @@ export const projects: Project[] = [
     description: `Co-founder and team member of the onchain media collective Zero Rights Media (formerly known as The Noun Square).<br><br>The Ethereum ecosystem is open source, and it deserves media content that is too.`,
     media: [
       {
-        type: 'video',
+        type: `video`,
         src: `https://vimeo.com/1045807123`,
         isCover: true
       }
@@ -132,7 +158,13 @@ export const projects: Project[] = [
     title: `Watch Grass`,
     type: `project`,
     description: `My first foray into <strong>p5.js experimentation</strong> is "<a href="https://watchgrass.benbodhi.energy/">Watch Grass</a>", a play on the "touch grass" saying.<br><br>I made a simple website where you can see iterations of the grass growing, manually or automatically, and you can "mow" the grass to start fresh.<br><br>I also experimented with minting this site as a <a href="https://zora.co/collect/zora:0x339d3cf921ef7fa5e9727c6f1f958279486e94be/1?referrer=0xa903C06BF35286f6d1cDAD25396748353979a44C">functional NFT on Zora</a>.`,
-    media: [],
+    media: [
+      {
+        type: `image`,
+        src: `/project-media/watch-grass.png`,
+        isCover: true
+      }
+    ],
     links: [
       {
         label: `Watch Grass`,
@@ -157,7 +189,35 @@ export const projects: Project[] = [
         label: `View/Collect`,
         url: `https://highlight.xyz/mint/base:0xA3527304322E1B2E9716E5f9c70C3F9b816A7299`,
         type: `primary`
+      }
+    ]
+  },
+  {
+    id: 9,
+    title: `BOARDS`,
+    type: `project`,
+    description: `I built <a href="https://boards.wtf">boards.wtf</a> as a showcase of so many talented artists I have had the pleasure of working with in the Nouns community and crypto space in general. What better than to showcase art on skateboards so you can ride them or put them on the wall.<br><br> Ride On!`,
+    media: [
+      {
+        type: `image`,
+        src: `/project-media/boards.wtf-sticker.png`,
+        isCover: true
       },
+      {
+        type: `image`,
+        src: `/project-media/boards.wtf-logo.png`
+      },
+      {
+        type: `image`,
+        src: `/project-media/boards.wtf-UFO-collab.png`
+      }
+    ],
+    links: [
+      {
+        label: `boards.wtf`,
+        url: `https://boards.wtf`,
+        type: `primary`
+      }
     ]
   }
 ]

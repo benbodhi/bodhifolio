@@ -54,8 +54,12 @@ const VideoRenderer = memo(({
   const [hasError, setHasError] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
-  // Determine if this is a Vimeo video
+  // State to store video dimensions
+  const [aspectRatio, setAspectRatio] = useState('16 / 9'); // Default aspect ratio
+  
+  // Determine if this is a Vimeo or YouTube video
   const isVimeo = src.includes('vimeo.com');
+  const isYouTube = src.includes('youtube.com') || src.includes('youtu.be');
   
   // Lazy load the iframe
   useEffect(() => {
@@ -97,9 +101,18 @@ const VideoRenderer = memo(({
     window.open(src, '_blank', 'noopener,noreferrer');
   }, [src]);
   
-  // Use appropriate aspect ratio based on video source
-  // For Vimeo, use 100% (square) if it's a square video
-  const paddingBottom = isVimeo ? '100%' : '56.25%';
+  // Set aspect ratio based on video source
+  useEffect(() => {
+    // YouTube videos are typically 16:9
+    if (isYouTube) {
+      setAspectRatio('16 / 9');
+    }
+    // Vimeo videos can be various aspect ratios, but we'll use 16:9 as default
+    // In a production app, you could fetch the video metadata from Vimeo API
+    else if (isVimeo) {
+      setAspectRatio('16 / 9');
+    }
+  }, [isYouTube, isVimeo]);
   
   return (
     <div className="relative w-full rounded-lg overflow-hidden" style={{ minHeight: '200px' }}>
@@ -118,7 +131,7 @@ const VideoRenderer = memo(({
         </div>
       ) : shouldRender ? (
         // Actual iframe when ready to render with control buttons
-        <div className="w-full h-0 relative" style={{ paddingBottom }}>
+        <div className="w-full h-0 relative" style={{ paddingBottom: 'calc(100% / (16/9))', aspectRatio }}>
           <iframe
             ref={iframeRef}
             src={formattedUrl.current}
