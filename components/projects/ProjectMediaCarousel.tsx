@@ -5,6 +5,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Fade from 'embla-carousel-fade';
 import type { MediaItem } from "@/lib/projects/types";
 import { getVideoThumbnail, getVideoEmbedUrl } from "./ProjectMediaUtils";
+import { openLightbox } from "./ProjectMediaLightbox";
 import "./project-media-carousel.css";
 
 export interface ProjectMediaCarouselProps {
@@ -238,13 +239,12 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   }
   
   // Function to handle media item click
-  const handleMediaClick = (item: MediaItem) => {
-    // Open the media in a new tab
-    if (item.type === "video") {
-      window.open(getVideoEmbedUrl(item), "_blank");
-    } else {
-      window.open(item.src, "_blank");
-    }
+  const handleMediaClick = (index: number) => {
+    // Use a unique gallery ID for each lightbox instance
+    const uniqueGalleryId = `carousel-${projectId}-${Date.now()}`;
+    
+    // Open the lightbox
+    openLightbox(displayMedia, uniqueGalleryId, index);
   };
   
   return (
@@ -258,7 +258,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
                   <div 
                     key={`${item.src}-${index}`} 
                     className="embla__slide"
-                    onClick={() => handleMediaClick(item)}
+                    onClick={() => handleMediaClick(index)}
                   >
                     <div className="cursor-pointer relative media-carousel-image-container">
                       <MediaItemComponent item={item} />
@@ -296,7 +296,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
           </>
         ) : (
           // Single item doesn't need carousel
-          <div className="cursor-pointer relative media-carousel-image-container" onClick={() => handleMediaClick(displayMedia[0])}>
+          <div className="cursor-pointer relative media-carousel-image-container" onClick={() => handleMediaClick(0)}>
             <MediaItemComponent item={displayMedia[0]} />
           </div>
         )}
