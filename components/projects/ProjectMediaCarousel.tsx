@@ -6,20 +6,6 @@ import Fade from 'embla-carousel-fade';
 import type { MediaItem } from "@/lib/projects/types";
 import { getVideoThumbnail, getVideoEmbedUrl } from "./ProjectMediaUtils";
 import "./project-media-carousel.css";
-// Import GLightbox styles
-import "glightbox/dist/css/glightbox.css";
-
-// Define a more generic type for GLightbox to avoid type conflicts
-// Prefixing with underscore to indicate it's intentionally unused
-type _GLightboxType = {
-  openAt: (index: number) => void;
-  destroy: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on: (event: string, callback: (data: any) => void) => void;
-  close: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any; // Allow any other properties
-};
 
 export interface ProjectMediaCarouselProps {
   media: MediaItem[];
@@ -61,8 +47,6 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
     duration: 100 // Controls the speed of the transition in milliseconds
   }, [Fade()]);
   const [_currentIndex, setCurrentIndex] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lightboxRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -71,9 +55,6 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   
   // Determine the media items to display
   const displayMedia = coverItem ? [coverItem] : media;
-  
-  // Create a unique gallery ID for this project
-  const galleryId = `project-gallery-${projectId}`;
   
   // Autoplay functionality - always define the callback regardless of conditions
   const autoplay = useCallback(() => {
@@ -156,212 +137,6 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
       }
     };
   }, [emblaApi, autoplay, displayMedia.length]);
-
-  // Initialize GLightbox when component mounts
-  useEffect(() => {
-    // Early return moved inside the effect body
-    if (typeof window === 'undefined') return;
-    
-    // Skip initialization if lightbox is already initialized
-    if (lightboxRef.current) return;
-    
-    let isMounted = true; // Flag to track if component is still mounted
-    
-    const loadGLightbox = async () => {
-      try {
-        // Dynamic import of GLightbox
-        const GLightboxModule = await import('glightbox');
-        const GLightbox = GLightboxModule.default;
-        
-        // Check if component is still mounted
-        if (!isMounted) return;
-        
-        // Make sure the elements exist before initializing
-        const elements = document.querySelectorAll(`.glightbox-${projectId}`);
-        if (elements.length === 0) {
-          return; // Silently return instead of logging a warning
-        }
-        
-        const shouldLoopLightbox = displayMedia.length > 1;
-        
-        // Initialize GLightbox
-        const lightbox = GLightbox({
-          selector: `.glightbox-${projectId}`,
-          touchNavigation: shouldLoopLightbox,
-          loop: shouldLoopLightbox,
-          autoplayVideos: true,
-          zoomable: true,
-          draggable: true,
-          preload: true,
-          closeOnOutsideClick: true,
-          startAt: 0,
-          descPosition: 'bottom',
-          height: '100vh', // Use full viewport height
-          width: '100%',   // Use full viewport width
-          moreText: '+',
-          moreLength: 0,
-          cssEffects: {
-            fade: { in: 'fadeIn', out: 'fadeOut' },
-            zoom: { in: 'zoomIn', out: 'zoomOut' }
-          },
-          plyr: {
-            config: {
-              ratio: '16:9',
-              fullscreen: { enabled: true, iosNative: true },
-              youtube: { noCookie: true, rel: 0, showinfo: 0 },
-              vimeo: { byline: false, portrait: false, title: false }
-            }
-          },
-          closeButton: true,
-          svg: {
-            close: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
-            next: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>',
-            prev: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>'
-          }
-        });
-        
-        // Check if component is still mounted before setting ref
-        if (!isMounted) {
-          lightbox.destroy();
-          return;
-        }
-        
-        lightboxRef.current = lightbox;
-        
-        // Handle slide_before_load to prepare the slide
-        // @ts-ignore - Ignoring type issues with GLightbox event handlers
-        lightbox.on('slide_before_load', function(data) {
-          if (!isMounted) return;
-          
-          // Add a class to the lightbox container for custom styling
-          const container = document.querySelector('.glightbox-container');
-          if (container) {
-            container.classList.add('custom-lightbox');
-            
-            // Ensure the lightbox is on top of everything
-            (container as HTMLElement).style.zIndex = '999999';
-            
-            // Prevent scrolling of the body when lightbox is open
-            document.body.style.overflow = 'hidden';
-            
-            // Force the container to be centered
-            (container as HTMLElement).style.display = 'flex';
-            (container as HTMLElement).style.alignItems = 'center';
-            (container as HTMLElement).style.justifyContent = 'center';
-          }
-          
-          // Also style the gcontainer
-          const gcontainer = document.querySelector('.gcontainer');
-          if (gcontainer) {
-            (gcontainer as HTMLElement).style.display = 'flex';
-            (gcontainer as HTMLElement).style.alignItems = 'center';
-            (gcontainer as HTMLElement).style.justifyContent = 'center';
-            (gcontainer as HTMLElement).style.height = '100%';
-          }
-        });
-        
-        // Handle slide_after_load to adjust content positioning
-        // @ts-ignore - Ignoring type issues with GLightbox event handlers
-        lightbox.on('slide_after_load', function(data) {
-          if (!isMounted) return;
-          
-          // Ensure the slide is centered
-          if (data.slideNode) {
-            (data.slideNode as HTMLElement).style.display = 'flex';
-            (data.slideNode as HTMLElement).style.alignItems = 'center';
-            (data.slideNode as HTMLElement).style.justifyContent = 'center';
-          }
-          
-          const slideContent = data.slideNode.querySelector('.gslide-image img');
-          if (slideContent) {
-            // Center the image vertically and horizontally
-            slideContent.style.margin = 'auto';
-            
-            // Add click handler for zooming
-            slideContent.addEventListener('click', function(this: HTMLElement, e: Event) {
-              // Prevent default zoom behavior
-              e.preventDefault();
-              e.stopPropagation();
-              
-              // Toggle zoomed class
-              if (this.classList.contains('zoomed')) {
-                this.classList.remove('zoomed');
-                this.style.transform = '';
-              } else {
-                this.classList.add('zoomed');
-                // Center the image when zoomed
-                this.style.transform = 'scale(1.5)';
-              }
-            });
-          }
-          
-          // Adjust video content if present
-          const videoContent = data.slideNode.querySelector('.gslide-video');
-          if (videoContent) {
-            videoContent.style.maxWidth = '100%';
-            videoContent.style.margin = 'auto';
-          }
-          
-          // Adjust inner content
-          const innerContent = data.slideNode.querySelector('.gslide-inner-content');
-          if (innerContent) {
-            (innerContent as HTMLElement).style.display = 'flex';
-            (innerContent as HTMLElement).style.alignItems = 'center';
-            (innerContent as HTMLElement).style.justifyContent = 'center';
-            (innerContent as HTMLElement).style.height = '100%';
-          }
-        });
-        
-        // Handle close event to restore body scrolling
-        // @ts-ignore - Ignoring type issues with GLightbox event handlers
-        lightbox.on('close', function() {
-          if (!isMounted) return;
-          
-          // Restore body scrolling
-          document.body.style.overflow = '';
-        });
-        
-        // Hide navigation for single items
-        if (displayMedia.length === 1) {
-          lightbox.on('open', () => {
-            if (!isMounted) return;
-            
-            setTimeout(() => {
-              if (!isMounted) return;
-              
-              document.querySelectorAll('.glightbox-container .gnext, .glightbox-container .gprev')
-                .forEach(el => (el as HTMLElement).style.display = 'none');
-            }, 100);
-          });
-        }
-        
-        // Removed console.log statement
-      } catch (error) {
-        if (process.env.NODE_ENV === 'production') {
-          console.error("Failed to initialize GLightbox:", error);
-        }
-      }
-    };
-    
-    // Load GLightbox without setTimeout to avoid multiple initializations
-    loadGLightbox();
-    
-    return () => {
-      isMounted = false; // Mark component as unmounted
-      
-      if (lightboxRef.current) {
-        try {
-          lightboxRef.current.destroy();
-          lightboxRef.current = null;
-        } catch (error) {
-          if (process.env.NODE_ENV === 'production') {
-            console.error("Error destroying lightbox:", error);
-          }
-        }
-      }
-    };
-  // Only re-run when projectId changes, not on every render
-  }, [projectId, displayMedia.length]);
   
   // Handle slide selection
   const onSelect = useCallback(() => {
@@ -425,34 +200,6 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
   
-  const openLightbox = (index: number) => {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      if (lightboxRef.current) {
-        lightboxRef.current.openAt(index);
-      } else {
-        // Instead of reinitializing GLightbox, just wait for the main initialization
-        // to complete in the useEffect hook
-        const checkLightbox = () => {
-          if (lightboxRef.current) {
-            lightboxRef.current.openAt(index);
-          } else {
-            // Try again in a short while
-            setTimeout(checkLightbox, 100);
-          }
-        };
-        
-        checkLightbox();
-      }
-    } catch (error) {
-      // Only log errors in production, not during development
-      if (process.env.NODE_ENV === 'production') {
-        console.error("Error opening lightbox:", error);
-      }
-    }
-  };
-  
   // Initialize the carousel with the first slide visible
   useEffect(() => {
     // Early return moved inside the effect body
@@ -490,6 +237,16 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
     return null;
   }
   
+  // Function to handle media item click
+  const handleMediaClick = (item: MediaItem) => {
+    // Open the media in a new tab
+    if (item.type === "video") {
+      window.open(getVideoEmbedUrl(item), "_blank");
+    } else {
+      window.open(item.src, "_blank");
+    }
+  };
+  
   return (
     <div className="project-media-container">
       <div className="media-carousel-container" ref={containerRef}>
@@ -501,7 +258,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
                   <div 
                     key={`${item.src}-${index}`} 
                     className="embla__slide"
-                    onClick={() => openLightbox(index)}
+                    onClick={() => handleMediaClick(item)}
                   >
                     <div className="cursor-pointer relative media-carousel-image-container">
                       <MediaItemComponent item={item} />
@@ -539,26 +296,10 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
           </>
         ) : (
           // Single item doesn't need carousel
-          <div className="cursor-pointer relative media-carousel-image-container" onClick={() => openLightbox(0)}>
+          <div className="cursor-pointer relative media-carousel-image-container" onClick={() => handleMediaClick(displayMedia[0])}>
             <MediaItemComponent item={displayMedia[0]} />
           </div>
         )}
-      </div>
-      
-      {/* Hidden links for GLightbox */}
-      <div className="hidden">
-        {displayMedia.map((item, index) => (
-          <a
-            key={`lightbox-${item.src}-${index}`}
-            href={item.type === "video" ? getVideoEmbedUrl(item) : item.src}
-            className={`glightbox-${projectId}`}
-            data-gallery={galleryId}
-            data-type={item.type}
-            data-description=""
-          >
-            {/* Hidden content for GLightbox */}
-          </a>
-        ))}
       </div>
     </div>
   );
