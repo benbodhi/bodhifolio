@@ -26,20 +26,22 @@ export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
   // Ensure we have a valid array
   const projects = Array.isArray(initialProjects) ? initialProjects : [];
   
-  // Track if we're hydrating or have hydrated
-  const [hasHydrated, setHasHydrated] = useState(false);
+  // Track if we're client-side
+  const [isClient, setIsClient] = useState(false);
   
-  // Use a lazy initializer for useState to ensure the shuffle only happens once
-  // This function will only be called once during the initial render
+  // Create a stable reference to the shuffled indices
+  // We'll use a ref to avoid re-shuffling during hydration
   const [order, setOrder] = useState(() => {
     // Create indices array and shuffle it
-    return shuffleArray(Array.from({ length: projects.length }, (_, i) => i));
+    return Array.from({ length: projects.length }, (_, i) => i);
   });
 
-  // Set hasHydrated to true once mounted
+  // Only shuffle once on the client side after initial mount
   useEffect(() => {
-    setHasHydrated(true);
-  }, []);
+    setIsClient(true);
+    // Perform the initial shuffle only once after mounting
+    setOrder(shuffleArray(Array.from({ length: projects.length }, (_, i) => i)));
+  }, [projects.length]);
 
   const handleShuffle = useCallback(() => {
     setOrder(shuffleArray([...order]));
@@ -47,12 +49,6 @@ export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
 
   // Map order to projects
   const orderedProjects = order.map(i => projects[i]);
-
-  // Only render content when we're on the server or have hydrated
-  // This prevents the flash of unshuffled content
-  if (typeof window !== 'undefined' && !hasHydrated) {
-    return null; // Return nothing during client-side hydration before hydration completes
-  }
 
   return (
     <section className="w-full">
@@ -62,106 +58,116 @@ export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
         </div>
       </div>
 
-      <div className="w-full relative bg-[hsl(var(--border))]">
-        {/* Single column layout */}
-        <div className="md:hidden">
-          <div className="bg-[hsl(var(--background))]">
-            {orderedProjects.map((project, index) => (
-              <ProjectCard 
-                key={project.id}
-                project={project}
-                isFirstInColumn={index === 0}
-              />
+      {/* Only render the grid when we're on the client side */}
+      {isClient && (
+        <div className="w-full relative bg-[hsl(var(--border))]">
+          {/* Single column layout */}
+          <div className="md:hidden">
+            <div className="bg-[hsl(var(--background))]">
+              {orderedProjects.map((project, index) => (
+                <ProjectCard 
+                  key={project.id}
+                  project={project}
+                  isFirstInColumn={index === 0}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Two column layout */}
+          <div className="hidden md:flex xl:hidden gap-[1px]">
+            <div className="w-full bg-[hsl(var(--background))]">
+              {orderedProjects
+                .slice(0, Math.ceil(orderedProjects.length / 2))
+                .map((project, index) => (
+                  <ProjectCard 
+                    key={project.id}
+                    project={project}
+                    isFirstInColumn={index === 0}
+                  />
+                ))}
+            </div>
+            <div className="w-full bg-[hsl(var(--background))]">
+              {orderedProjects
+                .slice(Math.ceil(orderedProjects.length / 2))
+                .map((project, index) => (
+                  <ProjectCard 
+                    key={project.id}
+                    project={project}
+                    isFirstInColumn={index === 0}
+                  />
+                ))}
+            </div>
+          </div>
+
+          {/* Three column layout */}
+          <div className="hidden xl:flex 3xl:hidden gap-[1px]">
+            {[0, 1, 2].map((colIndex) => (
+              <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
+                {orderedProjects
+                  .slice(
+                    Math.ceil((colIndex * orderedProjects.length) / 3),
+                    Math.ceil(((colIndex + 1) * orderedProjects.length) / 3)
+                  )
+                  .map((project, index) => (
+                    <ProjectCard 
+                      key={project.id}
+                      project={project}
+                      isFirstInColumn={index === 0}
+                    />
+                  ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Four column layout */}
+          <div className="hidden 3xl:flex 4xl:hidden gap-[1px]">
+            {[0, 1, 2, 3].map((colIndex) => (
+              <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
+                {orderedProjects
+                  .slice(
+                    Math.ceil((colIndex * orderedProjects.length) / 4),
+                    Math.ceil(((colIndex + 1) * orderedProjects.length) / 4)
+                  )
+                  .map((project, index) => (
+                    <ProjectCard 
+                      key={project.id}
+                      project={project}
+                      isFirstInColumn={index === 0}
+                    />
+                  ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Five column layout */}
+          <div className="hidden 4xl:flex gap-[1px]">
+            {[0, 1, 2, 3, 4].map((colIndex) => (
+              <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
+                {orderedProjects
+                  .slice(
+                    Math.ceil((colIndex * orderedProjects.length) / 5),
+                    Math.ceil(((colIndex + 1) * orderedProjects.length) / 5)
+                  )
+                  .map((project, index) => (
+                    <ProjectCard 
+                      key={project.id}
+                      project={project}
+                      isFirstInColumn={index === 0}
+                    />
+                  ))}
+              </div>
             ))}
           </div>
         </div>
+      )}
 
-        {/* Two column layout */}
-        <div className="hidden md:flex xl:hidden gap-[1px]">
-          <div className="w-full bg-[hsl(var(--background))]">
-            {orderedProjects
-              .slice(0, Math.ceil(orderedProjects.length / 2))
-              .map((project, index) => (
-                <ProjectCard 
-                  key={project.id}
-                  project={project}
-                  isFirstInColumn={index === 0}
-                />
-              ))}
-          </div>
-          <div className="w-full bg-[hsl(var(--background))]">
-            {orderedProjects
-              .slice(Math.ceil(orderedProjects.length / 2))
-              .map((project, index) => (
-                <ProjectCard 
-                  key={project.id}
-                  project={project}
-                  isFirstInColumn={index === 0}
-                />
-              ))}
-          </div>
+      {/* Show a placeholder or loading state when not on client yet */}
+      {!isClient && (
+        <div className="w-full h-screen flex items-center justify-center">
+          {/* You can customize this loading state as needed */}
         </div>
-
-        {/* Three column layout */}
-        <div className="hidden xl:flex 3xl:hidden gap-[1px]">
-          {[0, 1, 2].map((colIndex) => (
-            <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
-              {orderedProjects
-                .slice(
-                  Math.ceil((colIndex * orderedProjects.length) / 3),
-                  Math.ceil(((colIndex + 1) * orderedProjects.length) / 3)
-                )
-                .map((project, index) => (
-                  <ProjectCard 
-                    key={project.id}
-                    project={project}
-                    isFirstInColumn={index === 0}
-                  />
-                ))}
-            </div>
-          ))}
-        </div>
-
-        {/* Four column layout */}
-        <div className="hidden 3xl:flex 4xl:hidden gap-[1px]">
-          {[0, 1, 2, 3].map((colIndex) => (
-            <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
-              {orderedProjects
-                .slice(
-                  Math.ceil((colIndex * orderedProjects.length) / 4),
-                  Math.ceil(((colIndex + 1) * orderedProjects.length) / 4)
-                )
-                .map((project, index) => (
-                  <ProjectCard 
-                    key={project.id}
-                    project={project}
-                    isFirstInColumn={index === 0}
-                  />
-                ))}
-            </div>
-          ))}
-        </div>
-
-        {/* Five column layout */}
-        <div className="hidden 4xl:flex gap-[1px]">
-          {[0, 1, 2, 3, 4].map((colIndex) => (
-            <div key={colIndex} className="w-full bg-[hsl(var(--background))]">
-              {orderedProjects
-                .slice(
-                  Math.ceil((colIndex * orderedProjects.length) / 5),
-                  Math.ceil(((colIndex + 1) * orderedProjects.length) / 5)
-                )
-                .map((project, index) => (
-                  <ProjectCard 
-                    key={project.id}
-                    project={project}
-                    isFirstInColumn={index === 0}
-                  />
-                ))}
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </section>
   )
 } 
