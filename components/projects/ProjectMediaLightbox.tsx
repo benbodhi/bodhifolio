@@ -123,15 +123,20 @@ const LightboxPortal: React.FC = () => {
     <div 
       style={{
         position: 'fixed',
-        inset: 0,
-        width: '100%',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
         backgroundColor: 'rgba(0, 0, 0, 0.85)',
         zIndex: 9999999,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
-        pointerEvents: 'all'
+        pointerEvents: 'all',
+        cursor: 'pointer'
       }}
       onClick={closeLightbox}
     >
@@ -140,11 +145,14 @@ const LightboxPortal: React.FC = () => {
           position: 'relative',
           maxWidth: '85vw',
           maxHeight: '85vh',
-          height: '85vh',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          margin: 'auto'
+          margin: 'auto',
+          pointerEvents: 'auto',
+          cursor: 'default',
+          zIndex: 1,
+          backgroundColor: 'transparent'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -200,7 +208,7 @@ const LightboxPortal: React.FC = () => {
           justifyContent: 'center',
           alignItems: 'center',
           cursor: 'pointer',
-          zIndex: 9999999,
+          zIndex: 10,
           border: 'none',
           padding: 0,
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
@@ -239,7 +247,7 @@ const LightboxPortal: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
               cursor: 'pointer',
-              zIndex: 9999999,
+              zIndex: 10,
               border: 'none',
               padding: 0,
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
@@ -275,7 +283,7 @@ const LightboxPortal: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
               cursor: 'pointer',
-              zIndex: 9999999,
+              zIndex: 10,
               border: 'none',
               padding: 0,
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
