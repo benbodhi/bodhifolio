@@ -6,6 +6,13 @@ import { Project } from "@/lib/projects/types"
 import { ShuffleButton } from "@/components/ui/ShuffleButton"
 
 /**
+ * Helper function to shuffle an array
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  return [...array].sort(() => Math.random() - 0.5);
+}
+
+/**
  * Props for the ProjectGrid component
  */
 interface ProjectGridProps {
@@ -17,24 +24,35 @@ interface ProjectGridProps {
 
 export function ProjectGrid({ initialProjects = [] }: ProjectGridProps) {
   // Ensure we have a valid array
-  const projects = Array.isArray(initialProjects) ? initialProjects : []
+  const projects = Array.isArray(initialProjects) ? initialProjects : [];
   
-  // Start with sequential order for SSR
-  const [order, setOrder] = useState(() => 
-    Array.from({ length: projects.length }, (_, i) => i)
-  )
+  // Track if we're hydrating or have hydrated
+  const [hasHydrated, setHasHydrated] = useState(false);
+  
+  // Use a lazy initializer for useState to ensure the shuffle only happens once
+  // This function will only be called once during the initial render
+  const [order, setOrder] = useState(() => {
+    // Create indices array and shuffle it
+    return shuffleArray(Array.from({ length: projects.length }, (_, i) => i));
+  });
 
-  // Randomize on client-side only
+  // Set hasHydrated to true once mounted
   useEffect(() => {
-    setOrder(prev => [...prev].sort(() => Math.random() - 0.5))
-  }, [])
+    setHasHydrated(true);
+  }, []);
 
   const handleShuffle = useCallback(() => {
-    setOrder(prev => [...prev].sort(() => Math.random() - 0.5))
-  }, [])
+    setOrder(shuffleArray([...order]));
+  }, [order]);
 
   // Map order to projects
-  const orderedProjects = order.map(i => projects[i])
+  const orderedProjects = order.map(i => projects[i]);
+
+  // Only render content when we're on the server or have hydrated
+  // This prevents the flash of unshuffled content
+  if (typeof window !== 'undefined' && !hasHydrated) {
+    return null; // Return nothing during client-side hydration before hydration completes
+  }
 
   return (
     <section className="w-full">
