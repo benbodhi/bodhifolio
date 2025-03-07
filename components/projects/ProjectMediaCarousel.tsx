@@ -5,7 +5,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Fade from 'embla-carousel-fade';
 import type { MediaItem } from "@/lib/projects/types";
 import { getVideoThumbnail, getVideoEmbedUrl } from "./ProjectMediaUtils";
-import { openLightbox } from "./ProjectMediaLightbox";
+import { openLightbox } from "./ProjectMediaLightboxGLightbox";
 import "./project-media-carousel.css";
 
 export interface ProjectMediaCarouselProps {
