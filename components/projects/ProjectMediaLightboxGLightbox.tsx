@@ -60,6 +60,22 @@ const ensurePortalRoot = (): HTMLElement | null => {
         max-width: 85vw !important;
         max-height: 85vh !important;
       }
+      /* Make sure videos maintain their aspect ratio */
+      .glightbox-container .plyr {
+        width: 85vh;
+        height: auto !important;
+        max-width: 85vw !important;
+        max-height: 85vh !important;
+      }
+      .glightbox-container .plyr__video-wrapper {
+        height: auto !important;
+      }
+      .glightbox-container iframe {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 50vh !important; /* Ensure videos aren't too small */
+        aspect-ratio: auto !important; /* Let the video use its natural aspect ratio */
+      }
       .glightbox-container .gslide-inline {
         max-width: 85vw !important;
         max-height: 85vh !important;
@@ -68,6 +84,18 @@ const ensurePortalRoot = (): HTMLElement | null => {
       .glightbox-container .gnext, 
       .glightbox-container .gprev {
         margin: 0 20px;
+      }
+      .glightbox-clean .gnext,
+      .glightbox-clean .gprev {
+        width: 50px;
+        height: 50px;
+        border-radius: 100%;
+      }
+      .glightbox-clean .gnext {
+        padding: 0 0 0 4px;
+      }
+      .glightbox-clean .gprev {
+        padding: 0 4px 0 0;
       }
     `;
     document.head.appendChild(style);
@@ -129,8 +157,7 @@ const convertMediaToGLightboxFormat = (media: MediaItem[]) => {
       return {
         type: 'video',
         href: getVideoEmbedUrl(item),
-        // Add video-specific options to respect aspect ratio
-        width: '85vw', // Maximum width
+        // No need to specify width/height here as we'll use videosWidth
       };
     }
   });
@@ -190,6 +217,7 @@ export const openLightbox = (media: MediaItem[], galleryId: string, index: numbe
           draggable: true,
           // Responsive design
           moreLength: 0, // No "See more" text
+          videosWidth: '85vw', // Set maximum width for videos to match images
           plyr: {
             css: 'https://cdn.plyr.io/3.6.8/plyr.css',
             js: 'https://cdn.plyr.io/3.6.8/plyr.js',
