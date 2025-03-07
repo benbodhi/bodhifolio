@@ -226,7 +226,7 @@ const LightboxPortal: React.FC = () => {
           <button
             className="lightbox-prev"
             style={{
-              position: 'fixed',
+              position: 'absolute',
               top: '50%',
               left: '20px',
               transform: 'translateY(-50%)',
@@ -262,7 +262,7 @@ const LightboxPortal: React.FC = () => {
           <button
             className="lightbox-next"
             style={{
-              position: 'fixed',
+              position: 'absolute',
               top: '50%',
               right: '20px',
               transform: 'translateY(-50%)',
