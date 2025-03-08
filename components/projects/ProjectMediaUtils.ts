@@ -28,7 +28,10 @@ export const getVideoEmbedUrl = (item: MediaItem): string => {
       return `https://www.youtube.com/embed/${extractYouTubeID(src)}?autoplay=1`;
     }
     if (videoType === 'vimeo') {
-      return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1`;
+      // Use specific Vimeo parameters to control player dimensions
+      // responsive=1 ensures the player maintains the video's aspect ratio
+      // transparent=1 removes the background
+      return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1&transparent=1&portrait=0&title=0&byline=0&badge=0&autopause=0&dnt=1&responsive=1`;
     }
     return src; // Local video
   }
@@ -38,7 +41,10 @@ export const getVideoEmbedUrl = (item: MediaItem): string => {
     return `https://www.youtube.com/embed/${extractYouTubeID(src)}?autoplay=1`;
   }
   if (src.includes("vimeo.com")) {
-    return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1`;
+    // Use specific Vimeo parameters to control player dimensions
+    // responsive=1 ensures the player maintains the video's aspect ratio
+    // transparent=1 removes the background
+    return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1&transparent=1&portrait=0&title=0&byline=0&badge=0&autopause=0&dnt=1&responsive=1`;
   }
   return src; // Local video
 };

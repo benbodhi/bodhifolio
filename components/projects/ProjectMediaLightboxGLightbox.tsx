@@ -55,30 +55,26 @@ const ensurePortalRoot = (): HTMLElement | null => {
         max-height: 85vh !important;
         object-fit: contain;
       }
+      /* Video container styling */
       .glightbox-container .gslide-video {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        max-width: 85vw !important;
+        max-height: 85vh !important;
         width: auto !important;
-        max-width: 85vw !important;
-        max-height: 85vh !important;
-      }
-      /* Make sure videos maintain their aspect ratio */
-      .glightbox-container .plyr {
-        width: 85vh;
-        height: auto !important;
-        max-width: 85vw !important;
-        max-height: 85vh !important;
-      }
-      .glightbox-container .plyr__video-wrapper {
         height: auto !important;
       }
+      /* Basic iframe styling */
       .glightbox-container iframe {
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 50vh !important; /* Ensure videos aren't too small */
-        aspect-ratio: auto !important; /* Let the video use its natural aspect ratio */
+        max-width: 85vw !important;
+        max-height: 85vh !important;
       }
+      /* Inline content styling */
       .glightbox-container .gslide-inline {
         max-width: 85vw !important;
         max-height: 85vh !important;
+        overflow: auto !important;
       }
       /* Ensure navigation buttons don't overlap with content */
       .glightbox-container .gnext, 
@@ -153,11 +149,30 @@ const convertMediaToGLightboxFormat = (media: MediaItem[]) => {
         alt: '',
       };
     } else {
-      // For videos, use the embed URL
+      // For videos, create a responsive container with proper aspect ratio
+      const videoUrl = getVideoEmbedUrl(item);
+      
+      if (videoUrl.includes('vimeo')) {
+        // For Vimeo videos, use a custom HTML structure with responsive container
+        return {
+          type: 'inline',
+          content: `
+            <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%;">
+              <iframe src="${videoUrl}" 
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                frameborder="0" 
+                allow="autoplay; fullscreen; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            </div>
+          `
+        };
+      }
+      
+      // For other videos, use the standard video type
       return {
         type: 'video',
-        href: getVideoEmbedUrl(item),
-        // No need to specify width/height here as we'll use videosWidth
+        href: videoUrl,
       };
     }
   });
@@ -217,26 +232,8 @@ export const openLightbox = (media: MediaItem[], galleryId: string, index: numbe
           draggable: true,
           // Responsive design
           moreLength: 0, // No "See more" text
-          videosWidth: '85vw', // Set maximum width for videos to match images
-          plyr: {
-            css: 'https://cdn.plyr.io/3.6.8/plyr.css',
-            js: 'https://cdn.plyr.io/3.6.8/plyr.js',
-            config: {
-              fullscreen: { enabled: true, iosNative: true },
-              youtube: { 
-                noCookie: true, 
-                rel: 0, 
-                showinfo: 0, 
-                iv_load_policy: 3
-              },
-              vimeo: { 
-                byline: false, 
-                portrait: false, 
-                title: false, 
-                transparent: false
-              }
-            }
-          }
+          // Empty plyr config to use native video players
+          plyr: {}
         });
 
         // After initialization, move the lightbox container to our portal root
