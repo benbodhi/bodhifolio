@@ -28,10 +28,9 @@ export const getVideoEmbedUrl = (item: MediaItem): string => {
       return `https://www.youtube.com/embed/${extractYouTubeID(src)}?autoplay=1`;
     }
     if (videoType === 'vimeo') {
-      // Use specific Vimeo parameters to control player dimensions
-      // responsive=1 ensures the player maintains the video's aspect ratio
-      // transparent=1 removes the background
-      return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1&transparent=1&portrait=0&title=0&byline=0&badge=0&autopause=0&dnt=1&responsive=1`;
+      // Return a special format that will be handled by our custom player
+      // We'll use a custom protocol to identify this as a Vimeo ID rather than a URL
+      return `vimeo-id://${extractVimeoID(src)}`;
     }
     return src; // Local video
   }
@@ -41,10 +40,9 @@ export const getVideoEmbedUrl = (item: MediaItem): string => {
     return `https://www.youtube.com/embed/${extractYouTubeID(src)}?autoplay=1`;
   }
   if (src.includes("vimeo.com")) {
-    // Use specific Vimeo parameters to control player dimensions
-    // responsive=1 ensures the player maintains the video's aspect ratio
-    // transparent=1 removes the background
-    return `https://player.vimeo.com/video/${extractVimeoID(src)}?autoplay=1&transparent=1&portrait=0&title=0&byline=0&badge=0&autopause=0&dnt=1&responsive=1`;
+    // Return a special format that will be handled by our custom player
+    // We'll use a custom protocol to identify this as a Vimeo ID rather than a URL
+    return `vimeo-id://${extractVimeoID(src)}`;
   }
   return src; // Local video
 };
