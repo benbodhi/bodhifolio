@@ -4,7 +4,14 @@ import React, { useEffect, useCallback, useState, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Fade from 'embla-carousel-fade';
 import type { MediaItem } from "@/lib/projects/types";
-import { getVideoThumbnail, getVideoEmbedUrl } from "./ProjectMediaUtils";
+import { 
+  getVideoThumbnail, 
+  getVideoEmbedUrl, 
+  extractVimeoID, 
+  extractYouTubeID,
+  getVimeoVideoDimensions,
+  getYouTubeVideoDimensions
+} from "./ProjectMediaUtils";
 import { openLightbox } from "./ProjectMediaLightboxGLightbox";
 import "./project-media-carousel.css";
 
@@ -14,24 +21,277 @@ export interface ProjectMediaCarouselProps {
   projectId: string;
 }
 
-// Simple MediaItem component to display an image or video thumbnail
-const MediaItemComponent = ({ item }: { item: MediaItem }) => {
+// MediaItem component to display an image or embedded video
+const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClick: (e: React.MouseEvent) => void }) => {
+  const [aspectRatio, setAspectRatio] = useState<string>("16/9"); // Default aspect ratio
+  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const vimeoContainerRef = useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [vimeoPlayer, setVimeoPlayer] = useState<any>(null);
+
+  // Function to get video dimensions and set aspect ratio
+  const getVideoDimensions = useCallback(async () => {
+    if (item.type !== 'video') return;
+    
+    try {
+      let width = 16;
+      let height = 9;
+      
+      // Determine video type and get dimensions
+      if (item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'))) {
+        const vimeoId = item.videoType === 'vimeo' 
+          ? extractVimeoID(item.src) 
+          : extractVimeoID(item.src);
+        
+        const dimensions = await getVimeoVideoDimensions(vimeoId);
+        width = dimensions.width;
+        height = dimensions.height;
+      } else if (item.videoType === 'youtube' || (!item.videoType && (item.src.includes('youtube.com') || item.src.includes('youtu.be')))) {
+        const dimensions = getYouTubeVideoDimensions();
+        width = dimensions.width;
+        height = dimensions.height;
+      }
+      
+      // Set the aspect ratio
+      if (width && height) {
+        setAspectRatio(`${width}/${height}`);
+      }
+    } catch (error) {
+      console.error('Error getting video dimensions:', error);
+    }
+  }, [item]);
+
+  // For images, get dimensions from the loaded image
+  const updateImageAspectRatio = useCallback(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      const { naturalWidth, naturalHeight } = imgRef.current;
+      if (naturalWidth && naturalHeight) {
+        setAspectRatio(`${naturalWidth}/${naturalHeight}`);
+        setIsLoaded(true);
+      }
+    }
+  }, []);
+
+  // Effect to set the correct aspect ratio when component mounts
+  useEffect(() => {
+    if (item.type === 'video') {
+      getVideoDimensions();
+    } else if (imgRef.current && imgRef.current.complete) {
+      updateImageAspectRatio();
+    }
+  }, [item, getVideoDimensions, updateImageAspectRatio]);
+
+  // Initialize Vimeo player when needed
+  const initializeVimeoPlayer = useCallback(async () => {
+    if (item.type !== 'video' || !vimeoContainerRef.current) return;
+    
+    // Check if it's a Vimeo video
+    const isVimeo = item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'));
+    if (!isVimeo) return;
+    
+    try {
+      // Make sure Vimeo SDK is loaded
+      if (typeof window !== 'undefined' && !window.Vimeo) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://player.vimeo.com/api/player.js';
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = (err) => reject(err);
+          document.head.appendChild(script);
+        });
+      }
+      
+      if (typeof window !== 'undefined' && window.Vimeo && vimeoContainerRef.current) {
+        const vimeoId = item.videoType === 'vimeo' 
+          ? extractVimeoID(item.src) 
+          : extractVimeoID(item.src);
+        
+        console.log('Creating Vimeo player with ID:', vimeoId);
+        
+        // Create player with options
+        const player = new window.Vimeo.Player(vimeoContainerRef.current, {
+          id: parseInt(vimeoId, 10), // Vimeo API expects a number, not a string
+          autoplay: true, // Set to true to play immediately
+          portrait: false,
+          title: false,
+          byline: false,
+          badge: false,
+          dnt: true,
+          transparent: false,
+          background: false,
+          responsive: true,
+          controls: true
+        });
+        
+        // Store the player instance
+        setVimeoPlayer(player);
+        
+        // Get the video dimensions to set the correct size
+        player.getVideoWidth().then((width: number) => {
+          player.getVideoHeight().then((height: number) => {
+            if (width && height) {
+              console.log(`Vimeo video dimensions: ${width}x${height}`);
+              setAspectRatio(`${width}/${height}`);
+            }
+          });
+        });
+        
+        // Add event listeners
+        player.on('play', () => {
+          console.log('Vimeo video is playing');
+        });
+        
+        player.on('error', (err: any) => {
+          console.error('Vimeo player error:', err);
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing Vimeo player:', error);
+    }
+  }, [item]);
+
+  // Handle play button click
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent lightbox from opening
+    setIsVideoPlaying(true);
+    
+    if (item.type === 'video') {
+      if (item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'))) {
+        // Initialize Vimeo player
+        initializeVimeoPlayer();
+      }
+    }
+    
+    // Call the parent's onPlayClick handler
+    onPlayClick(e);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (vimeoPlayer) {
+        vimeoPlayer.destroy();
+      }
+    };
+  }, [vimeoPlayer]);
+
+  // Effect to initialize Vimeo player when video starts playing
+  useEffect(() => {
+    if (isVideoPlaying && item.type === 'video') {
+      if (item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'))) {
+        initializeVimeoPlayer();
+      }
+    }
+  }, [isVideoPlaying, item, initializeVimeoPlayer]);
+
   return (
-    <div className="media-item-wrapper">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img 
-        src={item.type === "video" ? getVideoThumbnail(item) : item.src} 
-        alt="" 
-        className="media-carousel-image"
-        loading="lazy"
-      />
-      {item.type === "video" && (
-        <div className="video-play-overlay">
-          <div className="video-play-button">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="48" height="48">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+    <div 
+      ref={containerRef}
+      className="media-item-wrapper"
+      style={{ 
+        aspectRatio: aspectRatio,
+        width: '100%',
+        position: 'relative',
+      }}
+    >
+      {item.type === 'image' && (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img 
+          ref={imgRef}
+          src={item.src} 
+          alt="" 
+          className="media-carousel-image"
+          loading="lazy"
+          onLoad={updateImageAspectRatio}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+      )}
+      
+      {item.type === 'video' && !isVideoPlaying && (
+        <>
+          {/* Video thumbnail */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            ref={imgRef}
+            src={getVideoThumbnail(item)} 
+            alt="" 
+            className="media-carousel-image"
+            loading="lazy"
+            onLoad={updateImageAspectRatio}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
+          
+          {/* Play button overlay */}
+          <div 
+            className="video-play-overlay"
+            onClick={handlePlayClick}
+          >
+            <div className="video-play-button">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="48" height="48">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
           </div>
+        </>
+      )}
+      
+      {item.type === 'video' && isVideoPlaying && (
+        <div 
+          className="video-player-container"
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        >
+          {/* Vimeo video */}
+          {(item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'))) && (
+            <div 
+              ref={vimeoContainerRef}
+              className="vimeo-player-container"
+              style={{
+                width: '100%',
+                height: '100%',
+              }}
+            />
+          )}
+          
+          {/* YouTube video */}
+          {(item.videoType === 'youtube' || (!item.videoType && (item.src.includes('youtube.com') || item.src.includes('youtu.be')))) && (
+            <iframe
+              src={`https://www.youtube.com/embed/${extractYouTubeID(item.src)}?autoplay=1`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+              }}
+            />
+          )}
         </div>
       )}
     </div>
@@ -50,6 +310,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   const [_currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
   
   // Check if there's a cover image that should be displayed exclusively
   const coverItem = media.find(item => item.isCover);
@@ -57,8 +318,18 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   // Determine the media items to display
   const displayMedia = coverItem ? [coverItem] : media;
   
+  // Pause autoplay when a video is playing
+  useEffect(() => {
+    if (activeVideoIndex !== null && autoplayRef.current) {
+      clearTimeout(autoplayRef.current);
+    }
+  }, [activeVideoIndex]);
+  
   // Autoplay functionality - always define the callback regardless of conditions
   const autoplay = useCallback(() => {
+    // Don't autoplay if a video is playing
+    if (activeVideoIndex !== null) return;
+    
     // Early return moved inside the callback body
     if (!emblaApi || displayMedia.length <= 1) return;
     
@@ -81,7 +352,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
         }
       }
     }, 5000); // 5 seconds
-  }, [emblaApi, displayMedia.length]);
+  }, [emblaApi, displayMedia.length, activeVideoIndex]);
   
   // Start autoplay when component mounts and when slide changes
   // Always call useEffect regardless of conditions
@@ -104,7 +375,10 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
     
     // Resume autoplay when mouse leaves
     const resumeAutoplay = () => {
-      autoplay();
+      // Only resume if no video is playing
+      if (activeVideoIndex === null) {
+        autoplay();
+      }
     };
     
     // Get the container element
@@ -137,22 +411,29 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
         container.removeEventListener('mouseleave', resumeAutoplay);
       }
     };
-  }, [emblaApi, autoplay, displayMedia.length]);
+  }, [emblaApi, autoplay, displayMedia.length, activeVideoIndex]);
   
   // Handle slide selection
   const onSelect = useCallback(() => {
     // Early return moved inside the callback body
     if (!emblaApi) return;
     
-    setCurrentIndex(emblaApi.selectedScrollSnap());
+    const selectedIndex = emblaApi.selectedScrollSnap();
+    setCurrentIndex(selectedIndex);
+    
+    // Reset active video when changing slides
+    setActiveVideoIndex(null);
     
     // Update container height based on current slide
     if (containerRef.current) {
-      const slideNode = emblaApi.slideNodes()[emblaApi.selectedScrollSnap()];
+      const slideNode = emblaApi.slideNodes()[selectedIndex];
       if (slideNode) {
-        const img = slideNode.querySelector('img');
-        if (img && img.complete && containerRef.current) {
-          const height = img.offsetHeight;
+        const mediaItemWrapper = slideNode.querySelector('.media-item-wrapper');
+        if (mediaItemWrapper && mediaItemWrapper instanceof HTMLElement) {
+          // Get the computed style to find the actual height after aspect ratio is applied
+          const computedStyle = window.getComputedStyle(mediaItemWrapper);
+          const height = parseFloat(computedStyle.height);
+          
           if (height > 0) {
             containerRef.current.style.height = `${height}px`;
           }
@@ -191,46 +472,52 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
     // No early return, just an empty effect if emblaApi is not available
   }, [emblaApi, onSelect]);
   
-  const scrollPrev = useCallback(() => {
-    // Condition inside the callback body
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
-  
-  const scrollNext = useCallback(() => {
-    // Condition inside the callback body
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
+  // Add a resize handler to update container heights when window is resized
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const handleResize = () => {
+      // Delay the height update to ensure all calculations are complete
+      setTimeout(onSelect, 100);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [emblaApi, onSelect]);
   
   // Initialize the carousel with the first slide visible
   useEffect(() => {
     // Early return moved inside the effect body
     if (!emblaApi) return;
     
-    // Update height for the first slide
-    if (containerRef.current) {
-      const slides = emblaApi.slideNodes();
-      if (slides.length > 0) {
-        const firstSlide = slides[0];
-        const img = firstSlide.querySelector('img');
-        if (img) {
-          if (img.complete) {
-            const height = img.offsetHeight;
-            if (height > 0) {
+    // Update height for the first slide after a short delay
+    const updateInitialHeight = () => {
+      if (containerRef.current) {
+        const slides = emblaApi.slideNodes();
+        if (slides.length > 0) {
+          const firstSlide = slides[0];
+          const mediaItemWrapper = firstSlide.querySelector('.media-item-wrapper');
+          
+          if (mediaItemWrapper && mediaItemWrapper instanceof HTMLElement) {
+            const computedStyle = window.getComputedStyle(mediaItemWrapper);
+            const height = parseFloat(computedStyle.height);
+            
+            if (height > 0 && containerRef.current) {
               containerRef.current.style.height = `${height}px`;
             }
-          } else {
-            img.onload = () => {
-              if (containerRef.current) {
-                const height = img.offsetHeight;
-                if (height > 0) {
-                  containerRef.current.style.height = `${height}px`;
-                }
-              }
-            };
           }
         }
       }
-    }
+    };
+    
+    // Try multiple times with increasing delays to ensure images and videos have loaded
+    [0, 100, 300, 500, 1000].forEach(delay => {
+      setTimeout(updateInitialHeight, delay);
+    });
+    
   }, [emblaApi]);
   
   // For empty media array, return nothing - MOVED HERE after all hooks
@@ -247,6 +534,12 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
     openLightbox(displayMedia, uniqueGalleryId, index);
   };
   
+  // Function to handle play button click
+  const handlePlayClick = (index: number) => (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent lightbox from opening
+    setActiveVideoIndex(index);
+  };
+  
   return (
     <div className="project-media-container">
       <div className="media-carousel-container" ref={containerRef}>
@@ -261,7 +554,10 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
                     onClick={() => handleMediaClick(index)}
                   >
                     <div className="cursor-pointer relative media-carousel-image-container">
-                      <MediaItemComponent item={item} />
+                      <MediaItemComponent 
+                        item={item} 
+                        onPlayClick={handlePlayClick(index)}
+                      />
                     </div>
                   </div>
                 ))}
@@ -273,7 +569,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
               className="embla__prev" 
               onClick={(e) => {
                 e.stopPropagation();
-                scrollPrev();
+                if (emblaApi) emblaApi.scrollPrev();
               }}
               aria-label="Previous slide"
             >
@@ -285,7 +581,7 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
               className="embla__next" 
               onClick={(e) => {
                 e.stopPropagation();
-                scrollNext();
+                if (emblaApi) emblaApi.scrollNext();
               }}
               aria-label="Next slide"
             >
@@ -297,7 +593,10 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
         ) : (
           // Single item doesn't need carousel
           <div className="cursor-pointer relative media-carousel-image-container" onClick={() => handleMediaClick(0)}>
-            <MediaItemComponent item={displayMedia[0]} />
+            <MediaItemComponent 
+              item={displayMedia[0]} 
+              onPlayClick={handlePlayClick(0)}
+            />
           </div>
         )}
       </div>
@@ -305,4 +604,13 @@ const ProjectMediaCarousel = ({ media, _title, projectId }: ProjectMediaCarousel
   );
 };
 
-export default ProjectMediaCarousel; 
+export default ProjectMediaCarousel;
+
+// Add global type definition for Vimeo Player SDK
+declare global {
+  interface Window {
+    Vimeo?: {
+      Player: any;
+    };
+  }
+} 

@@ -65,7 +65,10 @@ export const getVideoThumbnail = (item: MediaItem): string => {
       return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     }
     if (videoType === 'vimeo') {
-      return `https://vumbnail.com/${extractVimeoID(src)}.jpg`;
+      // Use vumbnail service which provides better quality thumbnails
+      // and preserves the original aspect ratio
+      const vimeoId = extractVimeoID(src);
+      return `https://vumbnail.com/${vimeoId}_large.jpg`;
     }
     return "/images/video-placeholder.jpg"; // Local video
   }
@@ -76,7 +79,44 @@ export const getVideoThumbnail = (item: MediaItem): string => {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
   if (src.includes("vimeo.com")) {
-    return `https://vumbnail.com/${extractVimeoID(src)}.jpg`;
+    // Use vumbnail service which provides better quality thumbnails
+    // and preserves the original aspect ratio
+    const vimeoId = extractVimeoID(src);
+    return `https://vumbnail.com/${vimeoId}_large.jpg`;
   }
   return "/images/video-placeholder.jpg"; // Fallback for local videos
+};
+
+/**
+ * Gets video dimensions from Vimeo's oEmbed API
+ * Returns a promise that resolves to an object with width and height
+ */
+export const getVimeoVideoDimensions = async (vimeoId: string): Promise<{width: number, height: number}> => {
+  try {
+    const response = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vimeoId}`);
+    const data = await response.json();
+    return {
+      width: data.width,
+      height: data.height
+    };
+  } catch (error) {
+    console.error('Error fetching Vimeo video dimensions:', error);
+    // Return default 16:9 aspect ratio dimensions
+    return {
+      width: 16,
+      height: 9
+    };
+  }
+};
+
+/**
+ * Gets video dimensions for YouTube videos
+ * YouTube videos are typically 16:9, but this could be extended to use the YouTube API
+ */
+export const getYouTubeVideoDimensions = (): {width: number, height: number} => {
+  // Default to 16:9 aspect ratio
+  return {
+    width: 16,
+    height: 9
+  };
 }; 
