@@ -1,7 +1,7 @@
 import Image from "next/image"
 import { MediaItem, ProjectItemProps } from "@/lib/projects/types"
 import { cn } from "@/lib/utils"
-import { useState, useEffect, useCallback, useRef, memo } from "react"
+import { useState, useEffect, useCallback, useRef, memo, lazy, Suspense } from "react"
 import ProjectMediaCarousel from "./ProjectMediaCarousel"
 
 // Define types for lightbox slides
@@ -435,6 +435,13 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
   // Create a unique ID for this project based on its id or title
   const projectId = `project-${project.id || project.title.toLowerCase().replace(/\s+/g, '-')}`;
   
+  // Flag to toggle between original and oEmbed implementations
+  // Set to true to test the oEmbed implementation
+  const useOEmbed = true;
+  
+  // Lazy load the oEmbed integration component
+  const ProjectMediaOEmbedIntegration = lazy(() => import("./ProjectMediaOEmbedIntegration"));
+  
   return (
     <div className="border-b border-[hsl(var(--border))] last:border-b-0">
       <div className={cn(
@@ -444,11 +451,22 @@ export function ProjectCard({ project, isFirstInColumn }: ProjectItemProps) {
         {/* Media Display */}
         {mediaItems.length > 0 && (
           <div className="project-media-container">
-            <ProjectMediaCarousel 
-              media={mediaItems}
-              _title={project.title}
-              projectId={projectId}
-            />
+            {useOEmbed ? (
+              // Use the oEmbed implementation
+              <Suspense fallback={<div>Loading oEmbed media...</div>}>
+                <ProjectMediaOEmbedIntegration
+                  media={mediaItems}
+                  projectId={projectId}
+                />
+              </Suspense>
+            ) : (
+              // Use the original implementation
+              <ProjectMediaCarousel 
+                media={mediaItems}
+                _title={project.title}
+                projectId={projectId}
+              />
+            )}
           </div>
         )}
         
