@@ -48,6 +48,15 @@ export const getVideoEmbedUrl = (item: MediaItem): string => {
 };
 
 /**
+ * Gets Vimeo thumbnail URL that preserves aspect ratio
+ */
+export const getVimeoThumbnailUrl = (vimeoId: string): string => {
+  // Use the direct thumbnail URL from Vimeo
+  // This will redirect to the actual thumbnail with the correct aspect ratio
+  return `https://i.vimeocdn.com/video/${vimeoId}`;
+};
+
+/**
  * Gets the appropriate thumbnail URL for videos
  */
 export const getVideoThumbnail = (item: MediaItem): string => {
@@ -65,10 +74,9 @@ export const getVideoThumbnail = (item: MediaItem): string => {
       return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
     }
     if (videoType === 'vimeo') {
-      // Use vumbnail service which provides better quality thumbnails
-      // and preserves the original aspect ratio
-      const vimeoId = extractVimeoID(src);
-      return `https://vumbnail.com/${vimeoId}_large.jpg`;
+      // For Vimeo, let's not try to generate a thumbnail URL
+      // Instead, return a special URL that will be handled by the component
+      return src;
     }
     return "/images/video-placeholder.jpg"; // Local video
   }
@@ -79,10 +87,9 @@ export const getVideoThumbnail = (item: MediaItem): string => {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
   }
   if (src.includes("vimeo.com")) {
-    // Use vumbnail service which provides better quality thumbnails
-    // and preserves the original aspect ratio
-    const vimeoId = extractVimeoID(src);
-    return `https://vumbnail.com/${vimeoId}_large.jpg`;
+    // For Vimeo, let's not try to generate a thumbnail URL
+    // Instead, return a special URL that will be handled by the component
+    return src;
   }
   return "/images/video-placeholder.jpg"; // Fallback for local videos
 };

@@ -30,6 +30,7 @@ const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClic
   const [isLoaded, setIsLoaded] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [vimeoPlayer, setVimeoPlayer] = useState<any>(null);
+  const [vimeoThumbnailUrl, setVimeoThumbnailUrl] = useState<string | null>(null);
 
   // Function to get video dimensions and set aspect ratio
   const getVideoDimensions = useCallback(async () => {
@@ -68,6 +69,7 @@ const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClic
     if (imgRef.current && imgRef.current.complete) {
       const { naturalWidth, naturalHeight } = imgRef.current;
       if (naturalWidth && naturalHeight) {
+        console.log(`Thumbnail dimensions: ${naturalWidth}x${naturalHeight}`);
         setAspectRatio(`${naturalWidth}/${naturalHeight}`);
         setIsLoaded(true);
       }
@@ -77,11 +79,41 @@ const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClic
   // Effect to set the correct aspect ratio when component mounts
   useEffect(() => {
     if (item.type === 'video') {
+      // For videos, first try to get dimensions from the API
       getVideoDimensions();
     } else if (imgRef.current && imgRef.current.complete) {
       updateImageAspectRatio();
     }
   }, [item, getVideoDimensions, updateImageAspectRatio]);
+
+  // For videos, let's rely on the natural dimensions of the thumbnail image
+  useEffect(() => {
+    if (item.type === 'video' && imgRef.current) {
+      // Add an event listener to get the natural dimensions once the image loads
+      const handleImageLoad = () => {
+        if (imgRef.current) {
+          const { naturalWidth, naturalHeight } = imgRef.current;
+          if (naturalWidth && naturalHeight) {
+            console.log(`Video thumbnail dimensions: ${naturalWidth}x${naturalHeight}`);
+            setAspectRatio(`${naturalWidth}/${naturalHeight}`);
+          }
+        }
+      };
+      
+      // If the image is already loaded, get dimensions now
+      if (imgRef.current.complete) {
+        handleImageLoad();
+      } else {
+        // Otherwise, add a load event listener
+        imgRef.current.addEventListener('load', handleImageLoad);
+        return () => {
+          if (imgRef.current) {
+            imgRef.current.removeEventListener('load', handleImageLoad);
+          }
+        };
+      }
+    }
+  }, [item.type]);
 
   // Initialize Vimeo player when needed
   const initializeVimeoPlayer = useCallback(async () => {
@@ -169,6 +201,15 @@ const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClic
     onPlayClick(e);
   };
 
+  // Effect to initialize Vimeo player when video starts playing
+  useEffect(() => {
+    if (isVideoPlaying && item.type === 'video') {
+      if (item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'))) {
+        initializeVimeoPlayer();
+      }
+    }
+  }, [isVideoPlaying, item, initializeVimeoPlayer]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -178,14 +219,38 @@ const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClic
     };
   }, [vimeoPlayer]);
 
-  // Effect to initialize Vimeo player when video starts playing
+  // Effect to fetch Vimeo thumbnail URL
   useEffect(() => {
-    if (isVideoPlaying && item.type === 'video') {
-      if (item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'))) {
-        initializeVimeoPlayer();
+    const fetchVimeoThumbnail = async () => {
+      if (item.type === 'video' && 
+          (item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com')))) {
+        try {
+          const vimeoId = item.videoType === 'vimeo' 
+            ? extractVimeoID(item.src) 
+            : extractVimeoID(item.src);
+          
+          // Fetch thumbnail URL from Vimeo's oEmbed API
+          const response = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vimeoId}`);
+          const data = await response.json();
+          
+          if (data.thumbnail_url) {
+            console.log('Vimeo thumbnail URL:', data.thumbnail_url);
+            setVimeoThumbnailUrl(data.thumbnail_url);
+            
+            // Also set the aspect ratio based on the video dimensions
+            if (data.width && data.height) {
+              console.log(`Vimeo video dimensions from API: ${data.width}x${data.height}`);
+              setAspectRatio(`${data.width}/${data.height}`);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching Vimeo thumbnail:', error);
+        }
       }
-    }
-  }, [isVideoPlaying, item, initializeVimeoPlayer]);
+    };
+    
+    fetchVimeoThumbnail();
+  }, [item]);
 
   return (
     <div 
@@ -223,7 +288,12 @@ const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClic
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             ref={imgRef}
-            src={getVideoThumbnail(item)} 
+            src={
+              // For Vimeo videos, use the thumbnail URL from the API if available
+              item.videoType === 'vimeo' || (!item.videoType && item.src.includes('vimeo.com'))
+                ? vimeoThumbnailUrl || getVideoThumbnail(item)
+                : getVideoThumbnail(item)
+            } 
             alt="" 
             className="media-carousel-image"
             loading="lazy"
@@ -238,12 +308,19 @@ const MediaItemComponent = ({ item, onPlayClick }: { item: MediaItem; onPlayClic
             }}
           />
           
-          {/* Play button overlay */}
+          {/* Clickable area for lightbox (the entire overlay) */}
           <div 
             className="video-play-overlay"
-            onClick={handlePlayClick}
+            onClick={(e) => {
+              // By default, clicking anywhere opens the lightbox
+              // The play button will stop propagation to prevent this
+            }}
           >
-            <div className="video-play-button">
+            {/* Play button - only this triggers inline playback */}
+            <div 
+              className="video-play-button"
+              onClick={handlePlayClick}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="48" height="48">
                 <path d="M8 5v14l11-7z"/>
               </svg>
